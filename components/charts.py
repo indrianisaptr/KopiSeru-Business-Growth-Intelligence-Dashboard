@@ -1,0 +1,498 @@
+"""
+components/charts.py
+All Plotly chart functions for KopiSeru Dashboard.
+Each function returns a go.Figure ready for st.plotly_chart().
+"""
+
+import plotly.graph_objects as go
+import plotly.express as px
+import pandas as pd
+import numpy as np
+from utils.data_loader import COLORS, MONTH_ORDER, BRANCH_TYPE_ORDER
+
+# ── Shared layout defaults ────────────────────────────────────────────────────
+
+def _base_layout(**kwargs) -> dict:
+    base = dict(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(family="Inter, Arial, sans-serif", color=COLORS["text"], size=12),
+        margin=dict(l=40, r=20, t=40, b=40),
+        legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(size=11)),
+    )
+    base.update(kwargs)
+    return base
+
+
+def _axis_style(title: str = "", gridcolor: str = "#EEE") -> dict:
+    return dict(
+        title=title,
+        gridcolor=gridcolor,
+        gridwidth=0.5,
+        showline=True,
+        linecolor="#DDD",
+        linewidth=1,
+        ticks="outside",
+        tickfont=dict(size=11),
+    )
+
+
+# ── 1. Revenue Trend Line ────────────────────────────────────────────────────
+
+def revenue_trend(monthly_df: pd.DataFrame) -> go.Figure:
+    """Monthly revenue trend split by year."""
+    fig = go.Figure()
+    colors = [COLORS["primary"], COLORS["accent"], COLORS["success"]]
+    for i, yr in enumerate(sorted(monthly_df["year"].unique())):
+        d = monthly_df[monthly_df["year"] == yr].sort_values("month")
+        fig.add_trace(go.Scatter(
+            x=d["month_label"], y=d["total_revenue"],
+            name=str(yr),
+            mode="lines+markers",
+            line=dict(color=colors[i % len(colors)], width=2.5),
+            marker=dict(size=6),
+            hovertemplate="<b>%{x} %{fullData.name}</b><br>Revenue: Rp %{y:,.0f}<extra></extra>",
+        ))
+    fig.update_layout(
+        title="Monthly Revenue Trend (All Branches)",
+        xaxis=_axis_style("Month"),
+        yaxis=_axis_style("Total Revenue (Rp)"),
+        **_base_layout(height=380),
+    )
+    return fig
+
+
+def revenue_yoy_bar(yoy: dict) -> go.Figure:
+    """YoY growth bar chart."""
+    years = list(yoy.keys())
+    vals  = list(yoy.values())
+    colors = [COLORS["success"] if v >= 0 else COLORS["danger"] for v in vals]
+    fig = go.Figure(go.Bar(
+        x=[str(y) for y in years],
+        y=vals,
+        marker_color=colors,
+        text=[f"+{v:.1f}%" if v >= 0 else f"{v:.1f}%" for v in vals],
+        textposition="outside",
+        hovertemplate="<b>%{x}</b><br>YoY Growth: %{y:.1f}%<extra></extra>",
+    ))
+    fig.update_layout(
+        title="Year-on-Year Revenue Growth (%)",
+        xaxis=_axis_style("Year"),
+        yaxis=_axis_style("Growth (%)"),
+        **_base_layout(height=300),
+    )
+    fig.add_hline(y=0, line_color="#999", line_dash="dot")
+    return fig
+
+
+# ── 2. Promo Charts ──────────────────────────────────────────────────────────
+
+def promo_boxplot(df: pd.DataFrame) -> go.Figure:
+    """Revenue distribution: Promo vs Non-Promo box plot."""
+    fig = go.Figure()
+    for label, color in [("Promo", COLORS["accent"]), ("Non-Promo", COLORS["secondary"])]:
+        d = df[df["promo_label"] == label]["total_revenue"]
+        fig.add_trace(go.Box(
+            y=d, name=label,
+            marker_color=color,
+            boxmean="sd",
+            hovertemplate="<b>" + label + "</b><br>Revenue: Rp %{y:,.0f}<extra></extra>",
+        ))
+    fig.update_layout(
+        title="Revenue Distribution: Promo vs Non-Promo",
+        yaxis=_axis_style("Total Revenue (Rp)"),
+        **_base_layout(height=360),
+    )
+    return fig
+
+
+def promo_avg_revenue(df: pd.DataFrame) -> go.Figure:
+    """Bar chart of average revenue per promo type. Accepts raw df."""
+    d = (
+        df.groupby("promo_type", as_index=False)["total_revenue"]
+        .mean()
+        .rename(columns={"total_revenue": "avg_revenue"})
+        .sort_values("avg_revenue", ascending=True)
+    )
+    fig = go.Figure(go.Bar(
+        x=d["avg_revenue"], y=d["promo_type"],
+        orientation="h",
+        marker_color=COLORS["accent"],
+        text=[f"Rp {v/1e6:.1f} JT" for v in d["avg_revenue"]],
+        textposition="outside",
+        hovertemplate="<b>%{y}</b><br>Avg Revenue: Rp %{x:,.0f}<extra></extra>",
+    ))
+    fig.update_layout(
+        title="Average Revenue per Promo Type",
+        xaxis=_axis_style("Avg Revenue (Rp)"),
+        yaxis=dict(title="", tickfont=dict(size=12)),
+        **_base_layout(height=320),
+    )
+    return fig
+
+
+# ── 3. Transactions vs Revenue ───────────────────────────────────────────────
+
+def txn_vs_revenue_scatter(df: pd.DataFrame) -> go.Figure:
+    """Scatter: transactions vs revenue, coloured by avg_ticket_size."""
+    sample = df.sample(min(2000, len(df)), random_state=42)
+    fig = px.scatter(
+        sample,
+        x="total_transactions", y="total_revenue",
+        color="avg_ticket_size",
+        color_continuous_scale=[[0, COLORS["accent2"]], [1, COLORS["primary"]]],
+        labels={
+            "total_transactions": "Total Transactions",
+            "total_revenue":      "Total Revenue (Rp)",
+            "avg_ticket_size":    "Avg Ticket Size (Rp)",
+        },
+        hover_data=["branch_name", "branch_city", "date"],
+        title="Transactions vs Revenue (colour = Avg Ticket Size)",
+    )
+    fig.update_traces(marker=dict(size=5, opacity=0.65))
+    fig.update_layout(**_base_layout(height=400))
+    return fig
+
+
+def correlation_heatmap(corr: pd.DataFrame) -> go.Figure:
+    """Correlation heatmap for key numeric columns."""
+    labels = ["Transactions", "Revenue", "Avg Ticket", "Cups Sold", "Profit"]
+    fig = go.Figure(go.Heatmap(
+        z=corr.values,
+        x=labels, y=labels,
+        colorscale=[[0, COLORS["bg"]], [0.5, COLORS["accent2"]], [1, COLORS["primary"]]],
+        text=np.round(corr.values, 2),
+        texttemplate="%{text}",
+        hovertemplate="<b>%{x} × %{y}</b><br>Corr: %{z:.2f}<extra></extra>",
+        zmin=-1, zmax=1,
+    ))
+    fig.update_layout(
+        title="Correlation Heatmap — Revenue & Transactions",
+        **_base_layout(height=380),
+    )
+    return fig
+
+
+# ── 4. Weekday vs Weekend ────────────────────────────────────────────────────
+
+def weekday_bar(ww_df: pd.DataFrame, metric: str = "avg_revenue",
+                title: str = "Weekday vs Weekend", fmt: str = "currency") -> go.Figure:
+    """Grouped bar for weekday vs weekend comparison."""
+    colors = [COLORS["primary"], COLORS["accent"]]
+    texts = []
+    for v in ww_df[metric]:
+        if fmt == "currency":
+            texts.append(f"Rp {v/1e6:.1f} JT")
+        elif fmt == "pct":
+            texts.append(f"{v:.1f}%")
+        else:
+            texts.append(f"{v:,.0f}")
+
+    fig = go.Figure(go.Bar(
+        x=ww_df["day_type"],
+        y=ww_df[metric],
+        marker_color=colors[:len(ww_df)],
+        text=texts,
+        textposition="outside",
+        hovertemplate="<b>%{x}</b><br>" + title + ": %{y:,.0f}<extra></extra>",
+    ))
+    fig.update_layout(
+        title=title,
+        yaxis=_axis_style(),
+        **_base_layout(height=300),
+    )
+    return fig
+
+
+# ── 5. City & Branch Performance ────────────────────────────────────────────
+
+def city_profit_bar(city_df: pd.DataFrame) -> go.Figure:
+    """Total profit per city horizontal bar."""
+    d = city_df.sort_values("total_profit", ascending=True)
+    fig = go.Figure(go.Bar(
+        x=d["total_profit"], y=d["branch_city"],
+        orientation="h",
+        marker_color=COLORS["primary"],
+        text=[f"Rp {v/1e6:.2f} M" for v in d["total_profit"]],
+        textposition="outside",
+        hovertemplate="<b>%{y}</b><br>Total Profit: Rp %{x:,.0f}<extra></extra>",
+    ))
+    fig.update_layout(
+        title="Total Profit per City (2021–2023)",
+        xaxis=_axis_style("Total Profit (Rp)"),
+        yaxis=dict(title="", tickfont=dict(size=12)),
+        **_base_layout(height=400),
+    )
+    return fig
+
+
+def branch_type_margin_bar(bt_df: pd.DataFrame) -> go.Figure:
+    """Average profit margin per branch type."""
+    bt_df = bt_df.sort_values("avg_profit_margin", ascending=False)
+    colors = [
+        COLORS["success"] if v >= 0 else COLORS["danger"]
+        for v in bt_df["avg_profit_margin"]
+    ]
+    fig = go.Figure(go.Bar(
+        x=bt_df["branch_type"],
+        y=bt_df["avg_profit_margin"],
+        marker_color=colors,
+        text=[f"{v:.1f}%" for v in bt_df["avg_profit_margin"]],
+        textposition="outside",
+        hovertemplate="<b>%{x}</b><br>Avg Margin: %{y:.1f}%<extra></extra>",
+    ))
+    fig.add_hline(y=0, line_color="#999", line_dash="dot")
+    fig.update_layout(
+        title="Average Profit Margin (%) per Branch Type",
+        yaxis=_axis_style("Profit Margin (%)"),
+        **_base_layout(height=340),
+    )
+    return fig
+
+
+def city_bubble(city_df: pd.DataFrame) -> go.Figure:
+    """Bubble chart: branches vs margin, bubble size = avg revenue."""
+    fig = go.Figure()
+    for _, row in city_df.iterrows():
+        fig.add_trace(go.Scatter(
+            x=[row["num_branches"]],
+            y=[row["avg_profit_margin"]],
+            mode="markers+text",
+            name=row["branch_city"],
+            text=[row["branch_city"]],
+            textposition="top center",
+            marker=dict(
+                size=max(row["revenue_per_branch"] / 500_000, 12),
+                color=COLORS["accent"],
+                opacity=0.8,
+                line=dict(color=COLORS["primary"], width=1.5),
+            ),
+            hovertemplate=(
+                f"<b>{row['branch_city']}</b><br>"
+                f"Branches: {row['num_branches']}<br>"
+                f"Avg Margin: {row['avg_profit_margin']:.1f}%<br>"
+                f"Revenue/branch: Rp {row['revenue_per_branch']:,.0f}<extra></extra>"
+            ),
+        ))
+    fig.update_layout(
+        title="Branches vs Profit Margin (bubble = avg revenue/branch)",
+        xaxis=_axis_style("Number of Branches (Saturation)"),
+        yaxis=_axis_style("Avg Profit Margin (%)"),
+        showlegend=False,
+        **_base_layout(height=420),
+    )
+    return fig
+
+
+# ── 6. Expansion ────────────────────────────────────────────────────────────
+
+def expansion_bar(exp_df: pd.DataFrame) -> go.Figure:
+    """Horizontal bar for expansion score per city."""
+    d = exp_df.sort_values("expansion_score", ascending=True)
+    colors = [COLORS["accent"] if v >= 0.6 else COLORS["secondary"]
+              for v in d["expansion_score"]]
+    fig = go.Figure(go.Bar(
+        x=d["expansion_score"],
+        y=d["branch_city"],
+        orientation="h",
+        marker_color=colors,
+        text=[f"{v:.3f}" for v in d["expansion_score"]],
+        textposition="outside",
+        hovertemplate="<b>%{y}</b><br>Expansion Score: %{x:.3f}<extra></extra>",
+    ))
+    fig.update_layout(
+        title="Expansion Potential Score per City (Profitability + Low Saturation)",
+        xaxis=dict(range=[0, 1], **_axis_style("Score (0–1)")),
+        yaxis=dict(title="", tickfont=dict(size=12)),
+        **_base_layout(height=380),
+    )
+    fig.add_vline(x=0.6, line_color=COLORS["accent"], line_dash="dash",
+                  annotation_text="High Priority", annotation_position="top right")
+    return fig
+
+
+# ── 7. Channel Charts ────────────────────────────────────────────────────────
+
+def channel_pie(ch_df: pd.DataFrame) -> go.Figure:
+    """Pie chart of overall channel distribution."""
+    colors = [COLORS["channel"].get(c, COLORS["accent"]) for c in ch_df["channel"]]
+    fig = go.Figure(go.Pie(
+        labels=ch_df["channel"],
+        values=ch_df["pct"],
+        marker_colors=colors,
+        textinfo="label+percent",
+        hovertemplate="<b>%{label}</b><br>Share: %{percent}<extra></extra>",
+        hole=0.35,
+    ))
+    fig.update_layout(
+        title="Transaction Channel Distribution (Overall)",
+        **_base_layout(height=360),
+    )
+    return fig
+
+
+def channel_stacked_bar(ch_type_df: pd.DataFrame) -> go.Figure:
+    """Stacked bar: channel distribution per branch type."""
+    fig = go.Figure()
+    for ch, col in [("Dine-in", "dine_in"), ("Delivery", "delivery"), ("Takeaway", "takeaway")]:
+        fig.add_trace(go.Bar(
+            name=ch,
+            x=ch_type_df["branch_type"],
+            y=ch_type_df[col],
+            marker_color=COLORS["channel"][ch],
+            hovertemplate="<b>%{x}</b><br>" + ch + ": %{y:.1f}%<extra></extra>",
+        ))
+    fig.update_layout(
+        barmode="stack",
+        title="Channel Distribution per Branch Type",
+        yaxis=_axis_style("Percentage (%)"),
+        **_base_layout(height=360),
+    )
+    return fig
+
+
+def channel_trend_line(ct_df: pd.DataFrame) -> go.Figure:
+    """Line chart of channel share trend by year."""
+    fig = go.Figure()
+    for ch, col, color in [
+        ("Dine-in",  "dine_in",  COLORS["primary"]),
+        ("Delivery", "delivery", COLORS["secondary"]),
+        ("Takeaway", "takeaway", COLORS["accent"]),
+    ]:
+        fig.add_trace(go.Scatter(
+            x=ct_df["year"].astype(str), y=ct_df[col],
+            name=ch, mode="lines+markers",
+            line=dict(color=color, width=2.5),
+            marker=dict(size=8),
+            hovertemplate="<b>%{x}</b><br>" + ch + ": %{y:.1f}%<extra></extra>",
+        ))
+    fig.update_layout(
+        title="Channel Trend per Year",
+        yaxis=_axis_style("Percentage (%)"),
+        **_base_layout(height=320),
+    )
+    return fig
+
+
+def delivery_share_city(city_df: pd.DataFrame, full_df: pd.DataFrame) -> go.Figure:
+    """Delivery share per city vs overall average."""
+    city_del = (
+        full_df.groupby("branch_city", as_index=False)
+        .agg(delivery_share=("delivery_percent", "mean"))
+        .sort_values("delivery_share", ascending=False)
+    )
+    avg = city_del["delivery_share"].mean()
+    colors = [
+        COLORS["accent"] if v >= avg else COLORS["secondary"]
+        for v in city_del["delivery_share"]
+    ]
+    fig = go.Figure(go.Bar(
+        x=city_del["branch_city"],
+        y=city_del["delivery_share"],
+        marker_color=colors,
+        text=[f"{v:.1f}%" for v in city_del["delivery_share"]],
+        textposition="outside",
+        hovertemplate="<b>%{x}</b><br>Delivery Share: %{y:.1f}%<extra></extra>",
+    ))
+    fig.add_hline(y=avg, line_color=COLORS["danger"], line_dash="dash",
+                  annotation_text=f"Avg {avg:.1f}%", annotation_position="top right")
+    fig.update_layout(
+        title="Average Delivery Share per City",
+        yaxis=_axis_style("Delivery Share (%)"),
+        **_base_layout(height=340),
+    )
+    return fig
+
+
+# ── 8. Customer Satisfaction ─────────────────────────────────────────────────
+
+def satisfaction_histogram(df: pd.DataFrame) -> go.Figure:
+    """Distribution histogram of customer satisfaction scores."""
+    mean_val = df["customer_satisfaction"].mean()
+    fig = go.Figure(go.Histogram(
+        x=df["customer_satisfaction"],
+        nbinsx=30,
+        marker_color=COLORS["accent"],
+        opacity=0.85,
+        hovertemplate="Score: %{x}<br>Count: %{y}<extra></extra>",
+    ))
+    fig.add_vline(x=mean_val, line_color=COLORS["primary"], line_dash="dash",
+                  annotation_text=f"Mean: {mean_val:.2f}",
+                  annotation_position="top right")
+    fig.update_layout(
+        title="Customer Satisfaction Score Distribution",
+        xaxis=_axis_style("Satisfaction Score (1–5)"),
+        yaxis=_axis_style("Count"),
+        **_base_layout(height=340),
+    )
+    return fig
+
+
+def satisfaction_by_factor_bar(sat_df: pd.DataFrame, factor_label: str) -> go.Figure:
+    """Bar chart of avg satisfaction by a given factor."""
+    d = sat_df.sort_values("avg_satisfaction", ascending=True)
+    fig = go.Figure(go.Bar(
+        x=d["avg_satisfaction"],
+        y=d.iloc[:, 0],    # first column = factor
+        orientation="h",
+        marker_color=COLORS["accent"],
+        text=[f"{v:.2f}" for v in d["avg_satisfaction"]],
+        textposition="outside",
+        hovertemplate="<b>%{y}</b><br>Avg Satisfaction: %{x:.2f}<extra></extra>",
+    ))
+    min_x = max(0, d["avg_satisfaction"].min() - 0.2)
+    fig.update_layout(
+        title=f"Avg Satisfaction by {factor_label}",
+        xaxis=dict(range=[min_x, 5], **_axis_style("Avg Satisfaction Score")),
+        yaxis=dict(title="", tickfont=dict(size=12)),
+        **_base_layout(height=300),
+    )
+    return fig
+
+
+def satisfaction_trend(df: pd.DataFrame) -> go.Figure:
+    """Monthly satisfaction trend per year."""
+    g = (
+        df.groupby(["year", "month"], as_index=False)
+        .agg(avg_sat=("customer_satisfaction", "mean"))
+    )
+    overall_mean = df["customer_satisfaction"].mean()
+    fig = go.Figure()
+    colors = [COLORS["primary"], COLORS["accent"], COLORS["success"]]
+    for i, yr in enumerate(sorted(g["year"].unique())):
+        d = g[g["year"] == yr].sort_values("month")
+        fig.add_trace(go.Scatter(
+            x=d["month"], y=d["avg_sat"],
+            name=str(yr),
+            mode="lines+markers",
+            line=dict(color=colors[i % len(colors)], width=2),
+            marker=dict(size=6),
+        ))
+    fig.add_hline(y=overall_mean, line_color="#999", line_dash="dot",
+                  annotation_text=f"Overall Mean {overall_mean:.2f}")
+    fig.update_layout(
+        title="Monthly Customer Satisfaction Trend",
+        xaxis=_axis_style("Month"),
+        yaxis=dict(range=[1, 5], **_axis_style("Avg Satisfaction")),
+        **_base_layout(height=340),
+    )
+    return fig
+
+
+def satisfaction_weather_box(df: pd.DataFrame) -> go.Figure:
+    """Box plot of satisfaction per weather type."""
+    fig = go.Figure()
+    colors = [COLORS["primary"], COLORS["accent"], COLORS["secondary"], COLORS["success"]]
+    for i, weather in enumerate(df["weather"].unique()):
+        d = df[df["weather"] == weather]["customer_satisfaction"]
+        fig.add_trace(go.Box(
+            y=d, name=weather,
+            marker_color=colors[i % len(colors)],
+            boxmean="sd",
+        ))
+    fig.update_layout(
+        title="Customer Satisfaction per Weather",
+        yaxis=_axis_style("Satisfaction Score"),
+        **_base_layout(height=340),
+    )
+    return fig

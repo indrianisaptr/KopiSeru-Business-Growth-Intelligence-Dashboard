@@ -1,0 +1,82 @@
+# Streamlit
+.streamlit/secrets.toml
+.streamlit/cache/
+.streamlit/*.cache*
+
+# Environment
+venv/
+env/
+ENV/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Jupyter Notebook
+.ipynb_checkpoints
+*.ipynb
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environments
+*.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Data (optional - uncomment if you want to ignore data files)
+# data/*.csv
+# data/*.xlsx
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Notebook
+.ipynb_checkpoints/
+
+# Node (if using any frontend tools)
+node_modules/
+package-lock.json
+yarn.lock
