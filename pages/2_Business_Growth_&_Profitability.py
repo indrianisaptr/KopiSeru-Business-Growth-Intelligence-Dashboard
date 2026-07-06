@@ -1,6 +1,6 @@
 """
-pages/2_📈_Business_Growth_&_Profitability.py
-Business Growth & Profitability Analysis with AI Copilot
+pages/2_Business_Growth_&_Profitability.py
+Business Growth & Profitability Analysis 
 """
 
 import streamlit as st

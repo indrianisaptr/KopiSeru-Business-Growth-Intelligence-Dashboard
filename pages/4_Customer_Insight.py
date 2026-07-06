@@ -1,6 +1,6 @@
 """
-pages/4_😊_Customer_Insight.py
-Customer Insight - Customer satisfaction and behavior analysis with AI Copilot
+pages/4_Customer_Insight.py
+Customer Insight - Customer satisfaction and behavior analysis 
 """
 
 import streamlit as st

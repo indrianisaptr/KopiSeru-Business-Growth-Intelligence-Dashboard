@@ -1,6 +1,6 @@
 """
-pages/3_🏪_Branch_Performance_&_Expansion.py
-Branch Performance & Expansion Strategy with AI Copilot
+pages/3_Branch_Performance_&_Expansion.py
+Branch Performance & Expansion Strategy 
 """
 
 import streamlit as st

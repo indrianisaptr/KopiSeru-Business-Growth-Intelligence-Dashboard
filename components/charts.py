@@ -9,6 +9,7 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 from utils.data_loader import COLORS, MONTH_ORDER, BRANCH_TYPE_ORDER
+from typing import cast
 
 # ── Shared layout defaults ────────────────────────────────────────────────────
 
@@ -44,7 +45,7 @@ def revenue_trend(monthly_df: pd.DataFrame) -> go.Figure:
     fig = go.Figure()
     colors = [COLORS["primary"], COLORS["accent"], COLORS["success"]]
     for i, yr in enumerate(sorted(monthly_df["year"].unique())):
-        d = monthly_df[monthly_df["year"] == yr].sort_values("month")
+        d = cast(pd.DataFrame, monthly_df.loc[monthly_df["year"] == yr]).sort_values("month")
         fig.add_trace(go.Scatter(
             x=d["month_label"], y=d["total_revenue"],
             name=str(yr),
@@ -108,12 +109,10 @@ def promo_boxplot(df: pd.DataFrame) -> go.Figure:
 
 def promo_avg_revenue(df: pd.DataFrame) -> go.Figure:
     """Bar chart of average revenue per promo type. Accepts raw df."""
-    d = (
-        df.groupby("promo_type", as_index=False)["total_revenue"]
-        .mean()
-        .rename(columns={"total_revenue": "avg_revenue"})
-        .sort_values("avg_revenue", ascending=True)
-    )
+    d = cast(
+        pd.DataFrame,
+        df.groupby("promo_type", as_index=False)["total_revenue"].mean()
+    ).rename(columns={"total_revenue": "avg_revenue"}).sort_values("avg_revenue", ascending=True)
     fig = go.Figure(go.Bar(
         x=d["avg_revenue"], y=d["promo_type"],
         orientation="h",

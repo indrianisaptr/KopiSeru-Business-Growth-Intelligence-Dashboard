@@ -1,6 +1,6 @@
 """
-pages/1_📊_Executive_Summary.py
-Executive Summary - Business Health Overview with AI Copilot
+pages/1_Executive_Summary.py
+Executive Summary - Business Health Overview 
 """
 
 import streamlit as st
