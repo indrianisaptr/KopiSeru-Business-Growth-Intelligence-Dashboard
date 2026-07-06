@@ -246,6 +246,6 @@ if True:
     # ── BUSINESS HIGHLIGHTS: ringkasan statis, full width ──────────────────
     with st.container(border=True, key="sidepanel_insights"):
         st.markdown("#### Business Highlights")
-        info_box(f'{svg("INSIGHT")} <b>Growth:</b> +73.7% (21→22), +49.2% (22→23)', kind="success")
+        info_box(f'{svg("INSIGHT")} <b>Growth:</b> +73.7% (21 to 22), +49.2% (22 to 23)', kind="success")
         info_box(f'{svg("PIN")} <b>Branch Type:</b> Mall 35.2% margin, University -37.7%', kind="warning")
         info_box(f'{svg("BRANCH")} <b>Expansion:</b> Makassar & Denpasar top targets', kind="info")

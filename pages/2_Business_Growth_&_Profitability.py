@@ -5,7 +5,7 @@ Layout mengikuti wireframe:
   Row 1 (3 kolom): Key Metrics (2x2) | Avg Revenue by Promo Type | Promo vs Non-Promo
   Row 2 (3 kolom, kiri lebih lebar): Weekday Revenue | Transactions | Profit
   Row 3 (2 kolom): Profitability by City (besar) | Business Development Copilot
-Semua data, KPI calculation, dan chart logic TIDAK diubah —
+Semua data, KPI calculation, dan chart logic TIDAK diubah
 hanya dibungkus ulang ke dalam card layout ala Executive Summary.
 """
 
@@ -73,24 +73,25 @@ def _chart_header(title: str, key: str, chart_title: str, chart_df, compact: boo
         info_box(extra_text, kind=extra_kind)
 
 # ═══════════════════════════════════════════════════════════════════════
-# ROW 1 — Key Metrics (2x2) | Avg Revenue by Promo Type | Promo vs Non-Promo
+# ROW 1 Key Metrics (2x2) | Avg Revenue by Promo Type | Promo vs Non-Promo
 # ═══════════════════════════════════════════════════════════════════════
 
 # ── KPI: baris horizontal di atas ─────────────────────────────────────────
-kpi_cols = st.columns(4, gap="small")
-with kpi_cols[0]:
-    metric_card("Total Revenue", fmt_currency(stats["total_revenue"]), icon=svg("REVENUE"))
-with kpi_cols[1]:
-    metric_card("Total Profit", fmt_currency(stats["total_profit"]), icon=svg("PROFIT"))
-with kpi_cols[2]:
-    metric_card("Profit Margin", f"{stats['avg_profit_margin']:.1f}%", icon=svg("MARGIN"))
-with kpi_cols[3]:
-    metric_card("Total Transactions", fmt_number(stats["total_transactions"]), icon=svg("CART"))
+with st.container(key="kpicol_std"):
+    kpi_cols = st.columns(4, gap="small")
+    with kpi_cols[0]:
+        metric_card("Total Revenue", fmt_currency(stats["total_revenue"]), icon=svg("REVENUE"))
+    with kpi_cols[1]:
+        metric_card("Total Profit", fmt_currency(stats["total_profit"]), icon=svg("PROFIT"))
+    with kpi_cols[2]:
+        metric_card("Profit Margin", f"{stats['avg_profit_margin']:.1f}%", icon=svg("MARGIN"))
+    with kpi_cols[3]:
+        metric_card("Total Transactions", fmt_number(stats["total_transactions"]), icon=svg("CART"))
 
 st.markdown("<div style='height:26px;'></div>", unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════
-# HERO — Profitability by City (chart utama, full width, dipindah ke atas)
+# HERO Profitability by City (chart utama, full width, dipindah ke atas)
 # ═══════════════════════════════════════════════════════════════════════
 with st.container(border=True, key="chartbox_city_profitability"):
     top_city = city_df.nlargest(1, 'total_profit').iloc[0]
@@ -98,21 +99,12 @@ with st.container(border=True, key="chartbox_city_profitability"):
 
     st.markdown("#### Profitability by City")
     info_box(
-        f"<b>Top Profit City:</b> {top_city['branch_city']} — "
+        f"<b>Top Profit City:</b> {top_city['branch_city']} • "
         f"Total: Rp {top_city['total_profit']:,.0f}<br>"
-        f"<b>Best Margin City:</b> {top_margin['branch_city']} — "
+        f"<b>Best Margin City:</b> {top_margin['branch_city']} • "
         f"Margin: {top_margin['avg_profit_margin']:.1f}%",
         kind="success"
     )
-    with st.expander("Detailed Profitability Metrics by City", expanded=False):
-        st.dataframe(
-            city_df[[
-                'branch_city', 'num_branches', 'total_revenue', 'total_profit',
-                'avg_profit_margin', 'revenue_per_branch', 'profit_per_branch'
-            ]].sort_values('avg_profit_margin', ascending=False),
-            use_container_width=True,
-            hide_index=True
-        )
 
     fig_city = city_profit_bar(city_df)
     _city_max = max(list(fig_city.data[0].x) or [0])
@@ -127,7 +119,7 @@ with st.container(border=True, key="chartbox_city_profitability"):
 st.markdown("<div style='margin-top:0.6rem;'></div>", unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════
-# SECONDARY — Avg Revenue by Promo Type | Promo vs Non-Promo
+# SECONDARY Avg Revenue by Promo Type | Promo vs Non-Promo
 # ═══════════════════════════════════════════════════════════════════════
 
 row1_c2, row1_c3 = st.columns(2, gap="small")
@@ -186,7 +178,7 @@ with row1_c3:
 st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════
-# ROW 2 — Weekday vs Weekend: Revenue (lebih lebar) | Transactions | Profit
+# ROW 2 Weekday vs Weekend: Revenue (lebih lebar) | Transactions | Profit
 # ═══════════════════════════════════════════════════════════════════════
 
 row2_c1, row2_c2, row2_c3 = st.columns([1, 1, 1], gap="small")
@@ -282,13 +274,11 @@ with row2_c3:
             st.plotly_chart(fig_profit, use_container_width=True, config={"displayModeBar": False})
 
 # ── Critical Finding (tetap dipertahankan persis) ─────────────────────────
-
-# BARU
-with st.expander("Weekend Profit Drop — Root Cause Analysis & Immediate Actions", expanded=False):
+with st.expander("Weekend Profit Drop: Further Analysis & Recommended Actions", expanded=False):
     col_insight1, col_insight2 = st.columns(2, gap="small")
 
     with col_insight1:
-        st.markdown("**Root Cause Analysis Needed**")
+        st.markdown("**Further Analysis Required**")
         info_box(
             "• Revenue only -3% but Profit -19%<br>"
             "• Likely higher operational costs<br>"
@@ -298,7 +288,7 @@ with st.expander("Weekend Profit Drop — Root Cause Analysis & Immediate Action
         )
 
     with col_insight2:
-        st.markdown("**Immediate Actions**")
+        st.markdown("**Recommended Actions**")
         info_box(
             "• Review weekend labor scheduling<br>"
             "• Implement dynamic pricing<br>"
@@ -310,7 +300,7 @@ with st.expander("Weekend Profit Drop — Root Cause Analysis & Immediate Action
 st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════
-# BUSINESS HIGHLIGHTS — ringkasan statis memakai angka yang sudah dihitung
+# BUSINESS HIGHLIGHTS ringkasan statis memakai angka yang sudah dihitung
 # ═══════════════════════════════════════════════════════════════════════
 
 top_city = city_df.nlargest(1, 'total_profit').iloc[0]
@@ -319,18 +309,18 @@ top_margin = city_df.nlargest(1, 'avg_profit_margin').iloc[0]
 with st.container(border=True, key="sidepanel_insights"):
     st.markdown("#### Business Highlights")
     info_box(
-        f"<b>Top Profit City:</b> {top_city['branch_city']} — "
+        f"<b>Top Profit City:</b> {top_city['branch_city']} • "
         f"Total: Rp {top_city['total_profit']:,.0f}<br>"
-        f"<b>Best Margin City:</b> {top_margin['branch_city']} — "
+        f"<b>Best Margin City:</b> {top_margin['branch_city']} • "
         f"Margin: {top_margin['avg_profit_margin']:.1f}%",
         kind="success"
     )
     info_box(
-        f"Promo boost: {_promo_boost:.1f}% — effective for volume, "
+        f"Promo boost: {_promo_boost:.1f}% • effective for volume, "
         "margin impact still needs evaluation.",
         kind="info"
     )
     info_box(
-        "Weekend profit drops sharply vs weekday — see Root Cause Analysis above.",
+        "Weekend profit drops sharply vs weekday see Further Analysis above.",
         kind="warning"
     )

@@ -78,7 +78,7 @@ def _hlegend_top(fig):
 
 
 # ── KPI: baris horizontal di atas ─────────────────────────────────────────
-with st.container(key="kpicol_main"):
+with st.container(key="kpicol_std"):
     kpi_cols = st.columns(4, gap="small")
     with kpi_cols[0]:
         metric_card("Avg Satisfaction", f"{avg_sat:.2f} / 5.0", icon=svg("SMILE"))
@@ -155,7 +155,7 @@ if True:
             kind="info",
         )
         info_box(
-            f'{svg("TARGET")} <b>Target:</b> Lift {avg_sat:.2f} → 4.2 via staff '
+            f'{svg("TARGET")} <b>Target:</b> Lift {avg_sat:.2f} to 4.2 via staff '
             "training + queue management",
             kind="warning",
         )

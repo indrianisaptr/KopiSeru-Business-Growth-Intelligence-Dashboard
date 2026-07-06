@@ -71,7 +71,7 @@ def _hlegend_top(fig):
 
 
 # ── KPI: baris horizontal di atas ─────────────────────────────────────────
-with st.container(key="kpicol_main"):
+with st.container(key="kpicol_std"):
     kpi_cols = st.columns(4, gap="small")
     with kpi_cols[0]:
         metric_card("Active Branches", str(int(stats["num_branches"])), icon=svg("BRANCH"))
@@ -157,33 +157,6 @@ if True:
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-    # ── Detail tabel: dilipat ke expander, tidak memenuhi halaman utama ────
-    with st.expander("Detailed Metrics — Branch Type & City Tables", expanded=False):
-        t1, t2 = st.columns(2, gap="small")
-        with t1:
-            st.markdown("#### Branch Type Comparison")
-            bt_display = bt_df[['branch_type', 'num_branches', 'total_revenue',
-                                'total_profit', 'avg_profit_margin']].copy()
-            bt_display['total_revenue'] = bt_display['total_revenue'].apply(fmt_currency)
-            bt_display['total_profit'] = bt_display['total_profit'].apply(fmt_currency)
-            bt_display['avg_profit_margin'] = bt_display['avg_profit_margin'].round(1)
-            bt_display.columns = ['Branch Type', '# Branches', 'Total Revenue', 'Total Profit', 'Margin %']
-            st.dataframe(bt_display.sort_values('Margin %', ascending=False),
-                         use_container_width=True, hide_index=True)
-
-        with t2:
-            st.markdown("#### Detailed City Metrics")
-            city_display = city_df[['branch_city', 'num_branches', 'avg_profit_margin',
-                                    'revenue_per_branch', 'profit_per_branch']].copy()
-            city_display['avg_profit_margin'] = city_display['avg_profit_margin'].round(1)
-            city_display['revenue_per_branch'] = city_display['revenue_per_branch'].apply(fmt_currency)
-            city_display['profit_per_branch'] = city_display['profit_per_branch'].apply(fmt_currency)
-            city_display.columns = ['City', '# Branches', 'Margin %', 'Rev/Branch', 'Profit/Branch']
-            st.dataframe(city_display.sort_values('Margin %', ascending=False),
-                         use_container_width=True, hide_index=True)
-
-    st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
-
     # ── BUSINESS HIGHLIGHTS: ringkasan statis, full width ──────────────────
     with st.container(border=True, key="sidepanel_insights"):
         st.markdown("#### Business Highlights")
@@ -194,7 +167,7 @@ if True:
         )
         info_box(
             f'{svg("WARNING")} <b>Worst:</b> {worst_type["branch_type"]} '
-            f'{worst_type["avg_profit_margin"]:.1f}% — fix before expanding',
+            f'{worst_type["avg_profit_margin"]:.1f}% | fix before expanding',
             kind="warning",
         )
         info_box(
@@ -202,3 +175,5 @@ if True:
             f'{top2["branch_city"]} are top targets',
             kind="info",
         )
+        
+    

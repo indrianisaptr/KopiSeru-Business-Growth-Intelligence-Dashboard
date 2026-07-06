@@ -236,17 +236,16 @@ def inject_compact_css() -> None:
         section.main .kpi-card,
         [data-testid="stMain"] .kpi-card {
             padding: 16px 16px 14px 16px !important;
-            height: 128px !important;          /* fixed, bukan min-height → semua sama persis */
             width: 100% !important;
             box-sizing: border-box !important;
             display: flex !important;
             flex-direction: column !important;
-            justify-content: space-between !important;
+            justify-content: flex-start !important;
         }
         section.main .kpi-icon-badge, [data-testid="stMain"] .kpi-icon-badge { font-size: 15px !important; }
-        section.main .kpi-label, [data-testid="stMain"] .kpi-label { font-size: 12px !important; margin-bottom: 4px !important; }
-        section.main .kpi-value, [data-testid="stMain"] .kpi-value { font-size: 27px !important; line-height: 1.1 !important; }
-        section.main .kpi-delta, [data-testid="stMain"] .kpi-delta { font-size: 10.5px !important; margin-top: 4px !important; }
+        section.main .kpi-label, [data-testid="stMain"] .kpi-label { font-size: 15px !important; margin-bottom: 4px !important; }
+        section.main .kpi-value, [data-testid="stMain"] .kpi-value { font-size: 25px !important; line-height: 1.1 !important; }
+        section.main .kpi-delta, [data-testid="stMain"] .kpi-delta { font-size: 15px !important; margin-top: 4px !important; }
         section.main .kpi-caption, [data-testid="stMain"] .kpi-caption { font-size: 10px !important; }
 
         /* Judul "KPI" — diperbesar, jarak ke card pertama dirapatkan */
@@ -425,18 +424,15 @@ def inject_compact_css() -> None:
         /* ── Panel KPI ────────────────────────────────────────────────────── */
         section.main div[class*="st-key-kpicol_"],
         [data-testid="stMain"] div[class*="st-key-kpicol_"] {
-            background: linear-gradient(180deg, #FBF6F0 0%, #F7EFE6 100%) !important;
-            border: 1px solid rgba(140, 100, 60, 0.18) !important;
-            border-radius: 10px !important;
-            padding: 10px 9px !important;
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
             box-sizing: border-box !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: center !important;
-            box-shadow:
-                0 4px 10px rgba(90, 60, 30, 0.14),
-                inset 0 1px 2px rgba(255, 255, 255, 0.6),
-                inset 0 -2px 4px rgba(0, 0, 0, 0.05) !important;
+            box-shadow: none !important;
         }
 
         /* ── Panel Insight + Copilot — 1 box, tinggi presisi = chart sebelah ── */
@@ -764,7 +760,7 @@ def inject_compact_css() -> None:
         [data-testid="stMain"] div[class*="st-key-kpicol_biz"] .kpi-card {
             min-height: 112px !important;
             padding: 13px 14px !important;
-            justify-content: center !important;
+            justify-content: flex-start !important;
         }
         section.main div[class*="st-key-kpicol_biz"] div[data-testid="stHorizontalBlock"],
         [data-testid="stMain"] div[class*="st-key-kpicol_biz"] div[data-testid="stHorizontalBlock"] {
@@ -832,12 +828,30 @@ def inject_compact_css() -> None:
             margin-bottom: 4px !important;
             padding-top: 0 !important;
         }
+        /* ── KPI card: Executive Summary (6 kartu, lebih tinggi) ─────────────── */
+        section.main div[class*="st-key-kpicol_main"] .kpi-card,
+        [data-testid="stMain"] div[class*="st-key-kpicol_main"] .kpi-card {
+            height: 180px !important;
+            min-height: 180px !important;
+        }
+
+        /* ── KPI card: Business Growth, Branch Performance, Customer Insight (4 kartu) ── */
+        section.main div[class*="st-key-kpicol_std"] .kpi-card,
+        [data-testid="stMain"] div[class*="st-key-kpicol_std"] .kpi-card {
+            height: 150px !important;
+            min-height: 150px !important;
+        }
         .kpi-card {
             position: relative;
             overflow: hidden;
             background: linear-gradient(180deg, #FBF6F0 0%, #F7EFE6 100%);
             border-radius: 16px;
-            padding: 18px 18px 16px 18px;
+            padding: 18px 18px 16px 18px;    
+            z-index: 0;
+        }
+        .kpi-card > * {
+            position: relative;   /* ← bikin semua child langsung punya stacking context sendiri */
+            z-index: 1;           /* ← naikkan di atas watermark */
         }
 
         .kpi-icon-badge {
@@ -880,28 +894,29 @@ def inject_compact_css() -> None:
         }
         .kpi-icon-watermark {
             position: absolute;
-            top: 8px;
+            top: 0px;
             right: 10px;
             font-size: 46px;
             color: #6f4e37;
             opacity: 0.12;
             pointer-events: none;
+            z-index: 0;
         }
 
         .kpi-label {
-            font-size: 12px;
+            font-size: 15px;
             font-weight: 700;
             letter-spacing: 0.05em;
             text-transform: uppercase;
             color: #8a7364;
             margin-bottom: 4px;
-            padding-right: 30px;   /* kasih jarak dari watermark icon di kanan atas */
-            white-space: nowrap;   /* cegah "PROFIT MARGIN" pecah 2 baris & numpuk icon */
+            padding-right: 0px;
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
         .kpi-value {
-            font-size: 30px;
+            font-size: 20px;
             font-weight: 800;
             color: #4A2C17;
             line-height: 1.1;
