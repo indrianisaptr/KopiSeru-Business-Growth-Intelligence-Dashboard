@@ -38,6 +38,7 @@ COLORS = {
     "success":       "#4CAF82",
     "danger":        "#C40C0C",
     "warning":       "#F5A623",
+    "babubabu":        "#37583D",   
     # chart palette
     "chart": [
         "#5C3D1E", "#8B5E3C", "#D4A853",

@@ -232,7 +232,12 @@ def city_profit_bar(city_df: pd.DataFrame) -> go.Figure:
         marker_color=COLORS["primary"],
         text=[f"Rp {v/1e6:.2f} M" for v in d["total_profit"]],
         textposition="outside",
-        hovertemplate="<b>%{y}</b><br>Total Profit: Rp %{x:,.0f}<extra></extra>",
+        customdata=d["num_branches"],
+        hovertemplate=(
+            "<b>%{y}</b><br>"
+            "Total Profit: Rp %{x:,.0f}<br>"
+            "Branches: %{customdata}<extra></extra>"
+        ),
     ))
     fig.update_layout(
         title="Total Profit per City (2021–2023)",
@@ -241,7 +246,6 @@ def city_profit_bar(city_df: pd.DataFrame) -> go.Figure:
         **_base_layout(height=400),
     )
     return fig
-
 
 def branch_type_margin_bar(bt_df: pd.DataFrame) -> go.Figure:
     """Average profit margin per branch type."""
@@ -347,7 +351,7 @@ def channel_pie(ch_df: pd.DataFrame) -> go.Figure:
         labels=ch_df["channel"],
         values=ch_df["pct"],
         marker_colors=colors,
-        textinfo="label+percent",
+        textinfo="percent",
         hovertemplate="<b>%{label}</b><br>Share: %{percent}<extra></extra>",
         hole=0.35,
     ))
@@ -439,13 +443,19 @@ def satisfaction_histogram(df: pd.DataFrame) -> go.Figure:
     fig = go.Figure(go.Histogram(
         x=df["customer_satisfaction"],
         nbinsx=30,
-        marker_color=COLORS["accent"],
+        marker=dict(
+            color=COLORS["accent"],
+            line=dict(
+                color=COLORS["text"],   
+                width=1.5
+            )
+        ),
         opacity=0.85,
         hovertemplate="Score: %{x}<br>Count: %{y}<extra></extra>",
     ))
-    fig.add_vline(x=mean_val, line_color=COLORS["primary"], line_dash="dash",
+    fig.add_vline(x=mean_val, line_color=COLORS["babubabu"], line_dash="dash",
                   annotation_text=f"Mean: {mean_val:.2f}",
-                  annotation_position="top right")
+                  annotation_position="top")
     fig.update_layout(
         title="Customer Satisfaction Score Distribution",
         xaxis=_axis_style("Satisfaction Score (1–5)"),
