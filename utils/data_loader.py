@@ -36,7 +36,7 @@ COLORS = {
     "text":          "#2C1A0E",
     "text_muted":    "#7A6552",
     "success":       "#4CAF82",
-    "danger":        "#E05252",
+    "danger":        "#C40C0C",
     "warning":       "#F5A623",
     # chart palette
     "chart": [

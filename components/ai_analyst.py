@@ -136,7 +136,14 @@ Keep it concise and reference the actual numbers shown above."""
         )
         return response.choices[0].message.content
     except Exception as e:
-        return f"AI request failed: {str(e)}"
+        msg = str(e)
+        if "rate_limit_exceeded" in msg or "429" in msg:
+            return (
+                "⚠️ Kuota harian AI Analyst untuk hari ini sudah tercapai. "
+                "Fitur ini akan aktif kembali secara otomatis dalam beberapa saat "
+                "(biasanya kurang dari 30 menit). Silakan coba lagi nanti."
+            )
+        return f"AI request failed: {msg}"
 
 
 def render_chart_explainer(
@@ -152,9 +159,9 @@ def render_chart_explainer(
     directly below any st.plotly_chart() call on any page. Single shared
     implementation so every chart on every page behaves identically.
     """
-    from components.metrics import ai_insight_card
+    from components.cards import ai_insight_card
 
-    if st.button("🔍 Explain This Chart", key=f"explain_{page_name}_{key}"):
+    if st.button(":material/search: Explain This Chart", key=f"explain_{page_name}_{key}"):
         with st.spinner("Analyzing chart..."):
             explanation = explain_chart(chart_title, chart_df, filters, stats, page_name)
         ai_insight_card(explanation.replace("\n", "<br>"))
@@ -194,7 +201,14 @@ def ask_ai(
         )
         return response.choices[0].message.content
     except Exception as e:
-        return f"AI request failed: {str(e)}"
+        msg = str(e)
+        if "rate_limit_exceeded" in msg or "429" in msg:
+            return (
+                "⚠️ Kuota harian AI Analyst untuk hari ini sudah tercapai. "
+                "Fitur ini akan aktif kembali secara otomatis dalam beberapa saat "
+                "(biasanya kurang dari 30 menit). Silakan coba lagi nanti."
+            )
+        return f"AI request failed: {msg}"
 
 
 def generate_page_insight(filters: dict, stats: dict, page_name: str) -> str:
@@ -222,18 +236,14 @@ def render_business_copilot(
         page_name: Current page name (for AI context)
         suggested_questions: List of 3-4 pre-written questions specific to the page
     """
-    from components.metrics import ai_insight_card
+    from components.cards import ai_insight_card
 
-    st.markdown("---")
     st.markdown(
         f"""
         <div style="background:{COLORS['bg']}; border:2px solid {COLORS['accent']};
-                    border-radius:12px; padding:20px; margin:20px 0;
-                    font-size:13px; color:{COLORS['text_muted']};">
-            <div style="font-weight:700; color:{COLORS['primary']}; margin-bottom:8px;">
-                Business Development Copilot
-            </div>
-            This AI assistant has access to the current filtered data and KopiSeru 
+                    border-radius:12px; padding:14px 16px; margin:0 0 14px 0;
+                    font-size:13px; color:{COLORS['text_muted']}; line-height:1.5;">
+            This AI assistant has access to the current filtered data and KopiSeru
             business context. Ask anything about the data or get strategic recommendations.
         </div>
         """,
@@ -245,7 +255,8 @@ def render_business_copilot(
 
     with tab1:
         st.subheader("AI Executive Insight")
-        if st.button("Generate Insight", key=f"ai_insight_{page_name}"):
+        if st.button("Generate Insight", key=f"ai_insight_{page_name}",
+                    use_container_width=True):
             with st.spinner("Analyzing data..."):
                 insight = generate_page_insight(filters, stats, page_name)
             ai_insight_card(insight.replace("\n", "<br>"))
@@ -253,12 +264,12 @@ def render_business_copilot(
     # ── Tab 2: Suggested Questions + Free-form Ask ────────────────────────
     with tab2:
         st.subheader("Suggested Questions")
-        cols = st.columns(2)
+        cols = st.columns(2, gap="small")
         for i, question in enumerate(suggested_questions):
             col = cols[i % 2]
             with col:
                 if st.button(question, key=f"suggested_{page_name}_{i}",
-                           use_container_width=True):
+                           use_container_width=False):
                     st.session_state[f"ai_question_{page_name}"] = question
                     with st.spinner("Analyzing..."):
                         st.session_state[f"ai_answer_{page_name}"] = ask_ai(
@@ -289,7 +300,8 @@ def render_business_copilot(
     # ── Tab 3: Action Recommendations ────────────────────────────────────
     with tab3:
         st.subheader("Recommended Actions")
-        if st.button("Generate Recommendations", key=f"recommendations_{page_name}"):
+        if st.button("Generate Recommendations", key=f"recommendations_{page_name}",
+                    use_container_width=True):
             with st.spinner("Generating recommendations..."):
                 rec_prompt = (
                     f"For the '{page_name}' page with current data, provide 3-4 specific, "

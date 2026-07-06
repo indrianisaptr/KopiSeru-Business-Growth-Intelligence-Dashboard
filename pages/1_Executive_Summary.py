@@ -1,9 +1,12 @@
 """
-pages/1_Executive_Summary.py
-Executive Summary - Business Health Overview 
+pages/1_📊_Executive_Summary.py
+Executive Summary - Business Health Overview
+Layout: kolom KPI sempit di kiri, grid chart di kanan.
+Tombol "Explain" dipindah ke pojok kanan atas tiap chart (sejajar judul).
 """
 
 import streamlit as st
+from utils.icons import svg
 from utils import (
     load_data, apply_filters, build_summary_stats,
     monthly_revenue, yoy_growth, correlation_matrix,
@@ -14,15 +17,16 @@ from components import (
     fmt_currency, fmt_number,
     revenue_trend, revenue_yoy_bar, promo_boxplot, promo_avg_revenue,
     correlation_heatmap, branch_type_margin_bar, channel_pie,
-    render_business_copilot
 )
-from components.ai_analyst import render_chart_explainer
+from components.cards import inject_compact_css
 
 st.set_page_config(
     page_title="Executive Summary | KopiSeru BI",
     page_icon="",
     layout="wide",
 )
+
+inject_compact_css()
 
 # ── Load & Filter data ────────────────────────────────────────────────────
 with st.spinner("Loading KopiSeru data..."):
@@ -37,176 +41,211 @@ if df.empty:
 
 stats = build_summary_stats(df)
 
-# ── Page Content ──────────────────────────────────────────────────────────
+# ── Header ────────────────────────────────────────────────────────────────
+section_header("Executive Summary", "KopiSeru Business Health Overview · 2021–2023")
 
-section_header(
-    "Executive Summary",
-    "KopiSeru Business Health Overview · 2021–2023"
-)
+# ── YoY calc ─────────────────────────────────────────────────────────────
+_yearly = df.groupby("year").agg(
+    rev=("total_revenue", "sum"),
+    pft=("profit", "sum"),
+    txn=("total_transactions", "sum"),
+).reset_index().sort_values("year")
 
-# ── KPI Cards ─────────────────────────────────────────────────────────────
+_yrs = _yearly["year"].tolist()
+if len(_yrs) >= 2:
+    _c = _yearly[_yearly["year"] == _yrs[-1]].iloc[0]
+    _p = _yearly[_yearly["year"] == _yrs[-2]].iloc[0]
+    _rev_yoy = (_c["rev"] - _p["rev"]) / _p["rev"] * 100
+    _pft_yoy = (_c["pft"] - _p["pft"]) / _p["pft"] * 100
+    _txn_yoy = (_c["txn"] - _p["txn"]) / _p["txn"] * 100
+else:
+    _rev_yoy = _pft_yoy = _txn_yoy = 0.0
 
-st.subheader("Key Performance Indicators")
+monthly_df = monthly_revenue(df)
+bt_df = branch_type_performance(df)
+ch_df = channel_distribution(df)
 
-# Row 1: 4 cards
-c1, c2, c3, c4 = st.columns(4)
-with c1:
-    metric_card("Total Revenue", fmt_currency(stats["total_revenue"]),
-                icon="💰", help_text="All branches, filtered period")
-with c2:
-    yoy = yoy_growth(df)
-    latest_yoy = list(yoy.values())[-1] if yoy else 0
-    metric_card("YoY Growth", f"+{latest_yoy:.1f}%" if latest_yoy >= 0 else f"{latest_yoy:.1f}%",
-                delta=f"{latest_yoy:+.1f}%", delta_positive=latest_yoy >= 0,
-                icon="📊", help_text="Latest year-on-year growth")
-with c3:
-    metric_card("Total Profit", fmt_currency(stats["total_profit"]),
-                icon="📈", help_text="Net profit after operating costs")
-with c4:
-    metric_card("Avg Profit Margin", f"{stats['avg_profit_margin']:.1f}%",
-                icon="💹", help_text="Average margin across all branches")
 
-st.markdown("<br>", unsafe_allow_html=True)
+def _chart_header(title: str, key: str, chart_title: str, chart_df, compact: bool = False) -> None:
+    """Judul chart."""
+    st.markdown(f"#### {title}")
 
-# Row 2: 2 additional cards
-c5, c6 = st.columns([2, 1])
-with c5:
-    metric_card("Total Transactions", fmt_number(stats["total_transactions"]),
-                icon="🛒", help_text="All transactions across branches")
-with c6:
-    metric_card("Customer Satisfaction", f"{stats['avg_satisfaction']:.2f} / 5",
-                icon="😊", help_text="Mean satisfaction score")
+# ── KPI: baris horizontal di atas (bukan kolom sempit di kiri) ────────────
+with st.container(key="kpicol_main"):
+    kpi_cols = st.columns(6, gap="small")
+    with kpi_cols[0]:
+        metric_card("Total Revenue", fmt_currency(stats["total_revenue"]),
+                    delta=f"+{_rev_yoy:.1f}% YoY", delta_positive=_rev_yoy >= 0, icon=svg("REVENUE"))
+    with kpi_cols[1]:
+        metric_card("Total Profit", fmt_currency(stats["total_profit"]),
+                    delta=f"+{_pft_yoy:.1f}% YoY", delta_positive=_pft_yoy >= 0, icon=svg("PROFIT"))
+    with kpi_cols[2]:
+        metric_card("Profit Margin", f"{stats['avg_profit_margin']:.1f}%", icon=svg("MARGIN"))
+    with kpi_cols[3]:
+        metric_card("Total Transactions", fmt_number(stats["total_transactions"]),
+                    delta=f"+{_txn_yoy:.1f}% YoY", delta_positive=_txn_yoy >= 0, icon=svg("TRANSACTION"))
+    with kpi_cols[4]:
+        metric_card("Avg Satisfaction", f"{stats['avg_satisfaction']:.2f}", icon=svg("SATISFACTION"))
+    with kpi_cols[5]:
+        metric_card("Total Branches", str(int(stats["num_branches"])), icon=svg("BRANCH"))
 
-st.markdown("<br>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top:0.6rem;'></div>", unsafe_allow_html=True)
 
-# ── Main Charts ───────────────────────────────────────────────────────────
+if True:
+    # ── HERO: Revenue Trend (full width, chart utama halaman) ─────────────
+    with st.container(border=True, key="chartbox_revenue_trend"):
+        _chart_header("Revenue Trend", "revenue_trend", "Monthly Revenue Trend", monthly_df)
+        fig = revenue_trend(monthly_df)
+        fig.update_layout(
+            title="",
+            height=275,
+            margin=dict(l=34, r=10, t=34, b=10),
+            legend=dict(
+                font=dict(size=9.5),
+                orientation="h",
+                yanchor="bottom",
+                y=1.05,
+                xanchor="center",
+                x=0.5,
+            ),
+        )
+        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
-st.subheader("Business Performance")
+    st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-# Row 1: Revenue & Profit Trends
-col_a, col_b = st.columns(2)
+    # ── SECONDARY: Profit Trend | Margin by Branch Type ────────────────────
+    r1c1, r1c2 = st.columns(2, gap="small")
+    with r1c1:
+        with st.container(border=True, key="chartbox_profit_trend"):
+            monthly_profit_df = monthly_df[['year', 'month', 'month_label', 'profit']].copy()
+            monthly_profit_df = monthly_profit_df.sort_values(['year', 'month'])
+            _chart_header("Profit Trend", "profit_trend", "Profit Trend", monthly_profit_df)
 
-with col_a:
-    st.markdown("#### Revenue Trend")
-    monthly_df = monthly_revenue(df)
-    fig = revenue_trend(monthly_df)
-    st.plotly_chart(fig, use_container_width=True)
-    render_chart_explainer("Monthly Revenue Trend", monthly_df, filters, stats, "Executive Summary", "revenue_trend")
+            # Ambil warna persis dari fig Revenue Trend (fig sudah dibuat di HERO di atas)
+            _revenue_colors = [trace.line.color for trace in fig.data]
 
-with col_b:
-    st.markdown("#### Profit Trend")
-    # Create profit trend (similar structure to revenue trend)
-    monthly_profit_df = monthly_df[['year', 'month', 'month_label', 'profit']].copy()
-    monthly_profit_df = monthly_profit_df.sort_values(['year', 'month'])
-    
-    import plotly.graph_objects as go
-    fig_profit = go.Figure()
-    for year in monthly_profit_df['year'].unique():
-        year_data = monthly_profit_df[monthly_profit_df['year'] == year]
-        fig_profit.add_trace(go.Scatter(
-            x=year_data['month_label'],
-            y=year_data['profit'],
-            mode='lines+markers',
-            name=str(year),
-            hovertemplate='<b>%{x}</b><br>Profit: Rp %{y:,.0f}<extra></extra>'
-        ))
-    fig_profit.update_layout(
-        title="",
-        xaxis_title="Month",
-        yaxis_title="Profit (Rp)",
-        hovermode='x unified',
-        template='plotly_white',
-        height=400
-    )
-    st.plotly_chart(fig_profit, use_container_width=True)
-    render_chart_explainer("Profit Trend", monthly_profit_df, filters, stats, "Executive Summary", "profit_trend")
+            import plotly.graph_objects as go
+            fig_profit = go.Figure()
+            for i, year in enumerate(sorted(monthly_profit_df['year'].unique())):
+                year_data = monthly_profit_df[monthly_profit_df['year'] == year]
+                _color = _revenue_colors[i % len(_revenue_colors)]
+                fig_profit.add_trace(go.Scatter(
+                    x=year_data['month_label'],
+                    y=year_data['profit'],
+                    mode='lines+markers',
+                    name=str(year),
+                    line=dict(color=_color),
+                    marker=dict(color=_color),
+                    hovertemplate='<b>%{x}</b><br>Profit: Rp %{y:,.0f}<extra></extra>'
+                ))
+            fig_profit.update_layout(
+                xaxis=dict(title=dict(text="Month", font=dict(size=10)), tickfont=dict(size=9)),
+                yaxis=dict(title=dict(text="Profit (Rp)", font=dict(size=10)), tickfont=dict(size=9)),
+                hovermode='x unified',
+                template='plotly_white',
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                height=250,
+                margin=dict(l=34, r=10, t=34, b=10),
+                font=dict(size=10.5),
+                legend=dict(
+                    font=dict(size=9.5),
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.05,
+                    xanchor="center",
+                    x=0.5,
+                ),
+            )
+            st.plotly_chart(fig_profit, use_container_width=True, config={"displayModeBar": False})
 
-st.markdown("<br>", unsafe_allow_html=True)
+    with r1c2:
+        with st.container(border=True, key="chartbox_branch_margin"):
+            _chart_header("Margin by Branch Type", "branch_type_margin",
+                          "Profit Margin by Branch Type", bt_df)
+            fig_bt = branch_type_margin_bar(bt_df)
+            fig_bt.update_layout(
+                title="",
+                height=250,
+                margin=dict(l=34, r=10, t=6, b=36),
+                xaxis=dict(automargin=True),
+                yaxis=dict(automargin=True),
+            )
+            st.plotly_chart(fig_bt, use_container_width=True, config={"displayModeBar": False})
 
-# Row 2: Revenue vs Transaction & Promo Impact
-col_c, col_d = st.columns(2)
+    st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-with col_c:
-    st.markdown("#### Revenue vs Transaction Correlation")
-    from components import txn_vs_revenue_scatter
-    fig_corr = txn_vs_revenue_scatter(df)
-    st.plotly_chart(fig_corr, use_container_width=True)
-    render_chart_explainer("Revenue vs Transaction Correlation", df[["total_transactions", "total_revenue"]], filters, stats, "Executive Summary", "txn_revenue_corr")
-    info_box(
-        "💡 Strong correlation (0.83) between transactions and revenue, but ticket size matters too.",
-        kind="info"
-    )
+    # ── SUPPORTING: Revenue vs Transaction | Promotion Impact | Channel Distribution ──
+    r2c1, r2c2, r2c3 = st.columns(3, gap="small")
+    with r2c1:
+        with st.container(border=True, key="chartbox_txn_revenue"):
+            _chart_header("Revenue vs Transaction", "txn_revenue_corr",
+                          "Revenue vs Transaction Correlation",
+                          df[["total_transactions", "total_revenue"]], compact=True)
+            from components import txn_vs_revenue_scatter
+            fig_corr = txn_vs_revenue_scatter(df)
+            fig_corr.update_layout(
+                title="",
+                height=220,
+                margin=dict(l=32, r=6, t=6, b=44),
+                xaxis=dict(title=dict(font=dict(size=10)), tickfont=dict(size=9), automargin=True),
+                yaxis=dict(title=dict(font=dict(size=10)), tickfont=dict(size=9), automargin=True),
+                coloraxis_colorbar=dict(
+                    title=dict(text="Avg Ticket (Rp)", font=dict(size=8)),
+                    thickness=8,
+                    len=0.55,
+                    tickfont=dict(size=7),
+                    x=1.0,
+                    xpad=2,
+                ),
+            )
+            st.plotly_chart(fig_corr, use_container_width=True, config={"displayModeBar": False})
 
-with col_d:
-    st.markdown("#### Promotion Impact")
-    fig_promo = promo_boxplot(df)
-    st.plotly_chart(fig_promo, use_container_width=True)
-    render_chart_explainer("Promotion Impact on Revenue", df[["promo_label", "total_revenue"]], filters, stats, "Executive Summary", "promo_impact")
-    info_box(
-        "📌 Promos boost volume. All types show similar effectiveness (~Rp 4.7-4.9 JT avg revenue).",
-        kind="info"
-    )
+    with r2c2:
+        with st.container(border=True, key="chartbox_promo_impact"):
+            _chart_header("Promotion Impact", "promo_impact", "Promotion Impact on Revenue",
+                          df[["promo_label", "total_revenue"]], compact=True)
+            fig_promo = promo_boxplot(df)
+            fig_promo.update_layout(
+                title="",
+                height=220,
+                margin=dict(l=32, r=8, t=40, b=30),
+                legend=dict(
+                    font=dict(size=9.5),
+                    orientation="h",
+                    yanchor="bottom",
+                    y=1.05,
+                    xanchor="center",
+                    x=0.5,
+                ),
+            )
+            st.plotly_chart(fig_promo, use_container_width=True, config={"displayModeBar": False})
 
-st.markdown("<br>", unsafe_allow_html=True)
+    with r2c3:
+        with st.container(border=True, key="chartbox_channel_dist"):
+            _chart_header("Channel Distribution", "channel_dist", "Channel Distribution", ch_df, compact=True)
+            fig_ch = channel_pie(ch_df)
+            fig_ch.update_traces(hole=0.32, textfont=dict(size=11))
+            fig_ch.update_layout(
+                title="",
+                height=220,
+                margin=dict(l=4, r=4, t=6, b=34),
+                legend=dict(
+                    font=dict(size=9.5),
+                    orientation="h",
+                    yanchor="bottom",
+                    y=-0.22,
+                    xanchor="center",
+                    x=0.5,
+                ),
+            )
+            st.plotly_chart(fig_ch, use_container_width=True, config={"displayModeBar": False})
 
-# Row 3: Branch Type & Channel
-col_e, col_f = st.columns(2)
+    st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-with col_e:
-    st.markdown("#### Profit Margin by Branch Type")
-    bt_df = branch_type_performance(df)
-    fig_bt = branch_type_margin_bar(bt_df)
-    st.plotly_chart(fig_bt, use_container_width=True)
-    render_chart_explainer("Profit Margin by Branch Type", bt_df, filters, stats, "Executive Summary", "branch_type_margin")
-
-with col_f:
-    st.markdown("#### Channel Distribution")
-    ch_df = channel_distribution(df)
-    fig_ch = channel_pie(ch_df)
-    st.plotly_chart(fig_ch, use_container_width=True)
-    render_chart_explainer("Channel Distribution", ch_df, filters, stats, "Executive Summary", "channel_dist")
-
-st.markdown("<br>", unsafe_allow_html=True)
-
-# ── Key Insights ──────────────────────────────────────────────────────────
-
-section_header("Key Business Insights", "Summary of current performance")
-
-i1, i2, i3 = st.columns(3)
-
-with i1:
-    info_box(
-        "<b>Growth Momentum:</b><br>Revenue grew +73.7% (2021→2022) "
-        "and +49.2% (2022→2023), showing sustained growth.",
-        kind="success"
-    )
-
-with i2:
-    info_box(
-        "<b>Branch Type Matters:</b><br>Mall branches lead with 35.2% margin. "
-        "University branches are at -37.7% — requires urgent attention.",
-        kind="warning"
-    )
-
-with i3:
-    info_box(
-        "<b>Expansion Priority:</b><br>Makassar and Denpasar identified as top "
-        "expansion targets based on profitability and low saturation.",
-        kind="info"
-    )
-
-# ── Business Development Copilot ──────────────────────────────────────────
-
-suggested_q = [
-    "Apakah bisnis kami tetap tumbuh?",
-    "Margin cabang tipe mana yang paling sehat?",
-    "Kota mana yang paling layak untuk ekspansi?",
-    "Apakah promosi masih efektif untuk revenue?",
-]
-
-render_business_copilot(
-    filters=filters,
-    stats=stats,
-    page_name="Executive Summary",
-    suggested_questions=suggested_q,
-)
+    # ── BUSINESS HIGHLIGHTS: ringkasan statis, full width ──────────────────
+    with st.container(border=True, key="sidepanel_insights"):
+        st.markdown("#### Business Highlights")
+        info_box(f'{svg("INSIGHT")} <b>Growth:</b> +73.7% (21→22), +49.2% (22→23)', kind="success")
+        info_box(f'{svg("PIN")} <b>Branch Type:</b> Mall 35.2% margin, University -37.7%', kind="warning")
+        info_box(f'{svg("BRANCH")} <b>Expansion:</b> Makassar & Denpasar top targets', kind="info")

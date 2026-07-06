@@ -9,7 +9,6 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 from utils.data_loader import COLORS, MONTH_ORDER, BRANCH_TYPE_ORDER
-from typing import cast
 
 # ── Shared layout defaults ────────────────────────────────────────────────────
 
@@ -17,9 +16,17 @@ def _base_layout(**kwargs) -> dict:
     base = dict(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter, Arial, sans-serif", color=COLORS["text"], size=12),
-        margin=dict(l=40, r=20, t=40, b=40),
-        legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(size=11)),
+        font=dict(family="Inter, Arial, sans-serif", color=COLORS["text"], size=10.5),
+        margin=dict(l=34, r=10, t=24, b=60),
+        legend=dict(
+            bgcolor="rgba(0,0,0,0)",
+            font=dict(size=9.5),
+            orientation="h",
+            yanchor="top",
+            y=-0.38,
+            xanchor="center",
+            x=0.5,
+        ),
     )
     base.update(kwargs)
     return base
@@ -27,14 +34,14 @@ def _base_layout(**kwargs) -> dict:
 
 def _axis_style(title: str = "", gridcolor: str = "#EEE") -> dict:
     return dict(
-        title=title,
+        title=dict(text=title, font=dict(size=10)),
         gridcolor=gridcolor,
         gridwidth=0.5,
         showline=True,
         linecolor="#DDD",
         linewidth=1,
         ticks="outside",
-        tickfont=dict(size=11),
+        tickfont=dict(size=9),
     )
 
 
@@ -45,7 +52,7 @@ def revenue_trend(monthly_df: pd.DataFrame) -> go.Figure:
     fig = go.Figure()
     colors = [COLORS["primary"], COLORS["accent"], COLORS["success"]]
     for i, yr in enumerate(sorted(monthly_df["year"].unique())):
-        d = cast(pd.DataFrame, monthly_df.loc[monthly_df["year"] == yr]).sort_values("month")
+        d = monthly_df[monthly_df["year"] == yr].sort_values("month")
         fig.add_trace(go.Scatter(
             x=d["month_label"], y=d["total_revenue"],
             name=str(yr),
@@ -58,7 +65,7 @@ def revenue_trend(monthly_df: pd.DataFrame) -> go.Figure:
         title="Monthly Revenue Trend (All Branches)",
         xaxis=_axis_style("Month"),
         yaxis=_axis_style("Total Revenue (Rp)"),
-        **_base_layout(height=380),
+        **_base_layout(height=185),
     )
     return fig
 
@@ -102,17 +109,19 @@ def promo_boxplot(df: pd.DataFrame) -> go.Figure:
     fig.update_layout(
         title="Revenue Distribution: Promo vs Non-Promo",
         yaxis=_axis_style("Total Revenue (Rp)"),
-        **_base_layout(height=360),
+        **_base_layout(height=185),
     )
     return fig
 
 
 def promo_avg_revenue(df: pd.DataFrame) -> go.Figure:
     """Bar chart of average revenue per promo type. Accepts raw df."""
-    d = cast(
-        pd.DataFrame,
-        df.groupby("promo_type", as_index=False)["total_revenue"].mean()
-    ).rename(columns={"total_revenue": "avg_revenue"}).sort_values("avg_revenue", ascending=True)
+    d = (
+        df.groupby("promo_type", as_index=False)["total_revenue"]
+        .mean()
+        .rename(columns={"total_revenue": "avg_revenue"})
+        .sort_values("avg_revenue", ascending=True)
+    )
     fig = go.Figure(go.Bar(
         x=d["avg_revenue"], y=d["promo_type"],
         orientation="h",
@@ -149,7 +158,16 @@ def txn_vs_revenue_scatter(df: pd.DataFrame) -> go.Figure:
         title="Transactions vs Revenue (colour = Avg Ticket Size)",
     )
     fig.update_traces(marker=dict(size=5, opacity=0.65))
-    fig.update_layout(**_base_layout(height=400))
+    fig.update_layout(
+        **_base_layout(height=250),
+        coloraxis_colorbar=dict(
+            title=dict(text="Avg Ticket (Rp)", font=dict(size=9)),
+            thickness=10,
+            len=0.65,
+            tickfont=dict(size=8),
+            x=1.0,
+        ),
+    )
     return fig
 
 
@@ -229,7 +247,7 @@ def branch_type_margin_bar(bt_df: pd.DataFrame) -> go.Figure:
     """Average profit margin per branch type."""
     bt_df = bt_df.sort_values("avg_profit_margin", ascending=False)
     colors = [
-        COLORS["success"] if v >= 0 else COLORS["danger"]
+        COLORS["secondary"] if v >= 0 else COLORS["danger"]
         for v in bt_df["avg_profit_margin"]
     ]
     fig = go.Figure(go.Bar(
@@ -244,14 +262,24 @@ def branch_type_margin_bar(bt_df: pd.DataFrame) -> go.Figure:
     fig.update_layout(
         title="Average Profit Margin (%) per Branch Type",
         yaxis=_axis_style("Profit Margin (%)"),
-        **_base_layout(height=340),
+        **_base_layout(height=185),
     )
     return fig
 
 
 def city_bubble(city_df: pd.DataFrame) -> go.Figure:
-    """Bubble chart: branches vs margin, bubble size = avg revenue."""
+    """Bubble chart: branches vs margin, bubble size = avg revenue (min-max scaled)."""
     fig = go.Figure()
+    MIN_SIZE, MAX_SIZE = 16, 46
+    rev = city_df["revenue_per_branch"]
+    rev_min, rev_max = rev.min(), rev.max()
+
+    def _scaled_size(value: float) -> float:
+        if rev_max == rev_min:
+            return (MIN_SIZE + MAX_SIZE) / 2
+        ratio = (value - rev_min) / (rev_max - rev_min)
+        return MIN_SIZE + ratio * (MAX_SIZE - MIN_SIZE)
+
     for _, row in city_df.iterrows():
         fig.add_trace(go.Scatter(
             x=[row["num_branches"]],
@@ -261,7 +289,7 @@ def city_bubble(city_df: pd.DataFrame) -> go.Figure:
             text=[row["branch_city"]],
             textposition="top center",
             marker=dict(
-                size=max(row["revenue_per_branch"] / 500_000, 12),
+                size=_scaled_size(row["revenue_per_branch"]),
                 color=COLORS["accent"],
                 opacity=0.8,
                 line=dict(color=COLORS["primary"], width=1.5),
@@ -325,7 +353,7 @@ def channel_pie(ch_df: pd.DataFrame) -> go.Figure:
     ))
     fig.update_layout(
         title="Transaction Channel Distribution (Overall)",
-        **_base_layout(height=360),
+        **_base_layout(height=185),
     )
     return fig
 

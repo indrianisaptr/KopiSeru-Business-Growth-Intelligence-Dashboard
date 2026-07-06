@@ -1,5 +1,5 @@
 from .sidebar import render_sidebar
-from .metrics import (
+from .cards import (
     metric_card, section_header, info_box,
     ai_insight_card, fmt_currency, fmt_number
 )
