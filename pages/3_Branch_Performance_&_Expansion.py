@@ -202,5 +202,3 @@ if True:
             f'{top2["branch_city"]} are top targets',
             kind="info",
         )
-        
-    
