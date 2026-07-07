@@ -24,7 +24,7 @@ def _load_css(path: str) -> None:
 
 st.set_page_config(
     page_title="KopiSeru BI Dashboard",
-    page_icon=_img_b64("assets/LogoKopiSeru.png"),
+    page_icon=_img_b64("assets/Icon_topi.png"),
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -61,16 +61,20 @@ st.markdown(
 )
 
 with st.sidebar:
-    _logo_b64 = _img_b64("assets/LogoKopiSeru.png")
+    _logo_b64 = _img_b64("assets/Icon_topi.png")
     st.markdown(
         f"""
-        <div style="text-align:center; padding: 8px 0 12px 0;">
+        <div style="text-align:center; padding: 0px 0 10px 0;">
             <div style="font-size:28px; font-weight:900;
                         color:#D4A853; letter-spacing:1px;">
-                <img src="{_logo_b64}" style="height:32px; width:auto;
+                <img src="{_logo_b64}" style="height:80px; width:auto;
                      vertical-align:middle; margin-right:6px;">
             </div>
-            <div style="font-size:11px; color:#C8A882;
+            <div style="font-size:22px; font-weight:800; color:#F6F4F2;
+                        letter-spacing:0.04em; margin-top:2px;">
+                KopiSeru
+            </div>
+            <div style="font-size:15px; color:#C8A882;
                         margin-top:2px;">
                 Business Intelligence Dashboard
             </div>

@@ -12,6 +12,21 @@ import streamlit as st
 from utils.icons import svg
 
 
+import base64
+from pathlib import Path
+
+_LOGO_CACHE = None
+
+def _get_logo_b64() -> str:
+    """Baca logo sekali, cache di memori supaya tidak baca file berulang."""
+    global _LOGO_CACHE
+    if _LOGO_CACHE is None:
+        logo_path = Path(__file__).resolve().parents[1] / "assets" / "Icon_topi.png"
+        data = logo_path.read_bytes()
+        _LOGO_CACHE = f"data:image/png;base64,{base64.b64encode(data).decode()}"
+    return _LOGO_CACHE
+
+
 def _render_html(html: str) -> None:
     """
     Render raw HTML safely via st.markdown.
@@ -95,17 +110,38 @@ def metric_card(
 
 
 def section_header(title: str, subtitle: str = "") -> None:
-    """Render a styled section header. Uses .section-title from main.css."""
+    """Render hero header box: logo | KopiSeru | nama halaman | deskripsi."""
+    logo_b64 = _get_logo_b64()
     sub_html = (
-        f'<p style="color:var(--text-muted); font-size:13px; margin:4px 0 0 0;">{subtitle}</p>'
-        if subtitle
-        else ""
+        f'<div style="font-size:15px; color:#E8D5BC; margin-top:4px;">{subtitle}</div>'
+        if subtitle else ""
     )
     _render_html(
         f"""
-        <div style="margin: -6px 0 22px 0;">
-            <div class="section-title" style="border-bottom:none; margin:0; padding:0;">{title}</div>
-            {sub_html}
+        <div style="
+            background: linear-gradient(135deg, #402218 0%, #6D4329 55%, #986938 100%);
+            border-radius: 14px;
+            padding: 18px 24px;
+            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            box-shadow:
+                0 6px 16px rgba(64, 34, 24, 0.35),
+                inset 0 1px 2px rgba(255, 255, 255, 0.12),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.25);
+        ">
+            <img src="{logo_b64}" style="height:56px; width:56px; object-fit:contain; flex-shrink:0;">
+            <div>
+                <div style="font-size:15px; font-weight:700; letter-spacing:0.08em;
+                            text-transform:uppercase; color:#BF9447; margin-bottom:2px;">
+                    KopiSeru
+                </div>
+                <div style="font-size:24px; font-weight:800; color:#F1EEEA; line-height:1.15;">
+                    {title}
+                </div>
+                {sub_html}
+            </div>
         </div>
         """
     )
