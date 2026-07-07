@@ -216,7 +216,8 @@ def render_sidebar(df: pd.DataFrame) -> dict:
             unsafe_allow_html=True,
         )
 
-        # ── Reset All Filters (paling atas) ────────────────────────────────
+        # ── Reset All Filters — state setup (tombolnya dipindah ke bawah,
+        # di bawah section "Data Information") ─────────────────────────────
         _filter_bases = [
             "filter_year", "filter_month", "filter_city", "filter_branch_type",
             "filter_promo", "filter_weather", "filter_channel", "filter_day_type",
@@ -224,16 +225,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
         if "filter_reset_counter" not in st.session_state:
             st.session_state["filter_reset_counter"] = 0
 
-        if st.button("Reset All Filters", use_container_width=True, key="btn_reset_filters"):
-            old_rc = st.session_state["filter_reset_counter"]
-            for base in _filter_bases:
-                st.session_state.pop(f"{base}_{old_rc}", None)
-            st.session_state["filter_reset_counter"] = old_rc + 1
-            st.rerun()
-
         _rc = st.session_state["filter_reset_counter"]
-
-        st.markdown("<div style='height:3px;'></div>", unsafe_allow_html=True)
 
         # ── Date Filter (terbuka default) ───────────────────────────────
         with st.expander("Date Filter", expanded=True, icon=":material/calendar_month:"):
@@ -325,6 +317,16 @@ def render_sidebar(df: pd.DataFrame) -> dict:
             """,
             unsafe_allow_html=True,
         )
+
+        st.markdown("<div style='height:3px;'></div>", unsafe_allow_html=True)
+
+        # ── Reset All Filters (di bawah Data Information) ──────────────────
+        if st.button("Reset All Filters", use_container_width=True, key="btn_reset_filters"):
+            old_rc = st.session_state["filter_reset_counter"]
+            for base in _filter_bases:
+                st.session_state.pop(f"{base}_{old_rc}", None)
+            st.session_state["filter_reset_counter"] = old_rc + 1
+            st.rerun()
 
     filters = {
         "years":        years_sel   or years_avail,

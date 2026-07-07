@@ -139,9 +139,9 @@ if True:
         with st.container(border=True, key="chartbox_saturation"):
             _chart_header("Saturation vs Profitability", "saturation_matrix",
                           "Market Saturation vs Profitability Matrix", city_df, compact=True)
-            fig = city_bubble(city_df)
+            fig = city_bubble(city_df, expansion_df)
             fig.update_layout(title="", height=220, showlegend=False,
-                              margin=dict(l=34, r=12, t=26, b=40),
+                              margin=dict(l=36, r=58, t=26, b=42),
                               xaxis=dict(automargin=True), yaxis=dict(automargin=True))
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
@@ -160,6 +160,15 @@ if True:
     # ── BUSINESS HIGHLIGHTS: ringkasan statis, full width ──────────────────
     with st.container(border=True, key="sidepanel_insights"):
         st.markdown("#### Business Highlights")
+        st.markdown(
+            """
+            <div style="font-size:11px; color:var(--text-muted); margin:-18px 0 18px 0; line-height:1.6;">
+                Compares branch type profitability and ranks expansion candidates, helping
+                prioritize where to invest and which branch types need improvement first.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         info_box(
             f'{svg("PIN")} <b>Best:</b> {best_type["branch_type"]} leads at '
             f'{best_type["avg_profit_margin"]:.1f}% margin',

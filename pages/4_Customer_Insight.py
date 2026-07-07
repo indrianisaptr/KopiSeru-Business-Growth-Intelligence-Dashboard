@@ -154,6 +154,15 @@ if True:
     # ── BUSINESS HIGHLIGHTS: ringkasan statis, full width ──────────────────
     with st.container(border=True, key="sidepanel_insights"):
         st.markdown("#### Business Highlights")
+        st.markdown(
+            """
+            <div style="font-size:11px; color:var(--text-muted); margin:-18px 0 18px 0; line-height:1.6;">
+                Highlights what drives customer satisfaction and where it falls short, so
+                the team can focus improvement efforts where they'll have the most impact.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         info_box(
             f'{svg("SMILE")} <b>Drivers:</b> {best_type["branch_type"]} tops '
             f'({best_type["avg_satisfaction"]:.2f}); atmosphere & service speed matter most',

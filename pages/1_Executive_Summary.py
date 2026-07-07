@@ -244,8 +244,20 @@ if True:
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
     # ── BUSINESS HIGHLIGHTS: ringkasan statis, full width ──────────────────
+    # AFTER
     with st.container(border=True, key="sidepanel_insights"):
         st.markdown("#### Business Highlights")
+        st.markdown(
+            """
+            <div style="font-size:11px; color:var(--text-muted); margin:-18px 0 18px 0; line-height:1.6;">
+                A quick snapshot of revenue growth, branch profitability, and expansion
+                opportunities to help guide strategic business decisions.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         info_box(f'{svg("INSIGHT")} <b>Growth:</b> +73.7% (21 to 22), +49.2% (22 to 23)', kind="success")
         info_box(f'{svg("PIN")} <b>Branch Type:</b> Mall 35.2% margin, University -37.7%', kind="warning")
         info_box(f'{svg("BRANCH")} <b>Expansion:</b> Makassar & Denpasar top targets', kind="info")
+        
+        

@@ -1,7 +1,7 @@
 from .sidebar import render_sidebar
 from .cards import (
     metric_card, section_header, info_box,
-    ai_insight_card, fmt_currency, fmt_number
+    fmt_currency, fmt_number
 )
 from .charts import (
     revenue_trend, revenue_yoy_bar,
@@ -15,4 +15,3 @@ from .charts import (
     satisfaction_trend, satisfaction_weather_box,
     satisfaction_branch_box, satisfaction_promo_bar, 
 )
-from .ai_analyst import ask_ai, generate_page_insight, render_business_copilot

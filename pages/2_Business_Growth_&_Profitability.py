@@ -308,6 +308,15 @@ top_margin = city_df.nlargest(1, 'avg_profit_margin').iloc[0]
 
 with st.container(border=True, key="sidepanel_insights"):
     st.markdown("#### Business Highlights")
+    st.markdown(
+        """
+        <div style="font-size:11px; color:var(--text-muted); margin:-18px 0 18px 0; line-height:1.6;">
+            Summarizes which cities drive the most profit, how well promotions
+            pay off, and where weekend performance needs closer attention.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     info_box(
         f"<b>Top Profit City:</b> {top_city['branch_city']} • "
         f"Total: Rp {top_city['total_profit']:,.0f}<br>"
