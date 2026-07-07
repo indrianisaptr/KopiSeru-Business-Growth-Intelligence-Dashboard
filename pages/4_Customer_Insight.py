@@ -18,6 +18,7 @@ from components import (
     render_sidebar, section_header, metric_card, info_box,
     satisfaction_histogram,
     satisfaction_trend, satisfaction_weather_box,
+    satisfaction_branch_box, satisfaction_promo_bar
 )
 from components.cards import inject_compact_css
 
@@ -63,46 +64,6 @@ worst_type   = sat_by_type.iloc[-1]
 def _chart_header(title: str, key: str, chart_title: str, chart_df, compact: bool = False) -> None:
     """Judul chart."""
     st.markdown(f"#### {title}")
-
-
-def satisfaction_branch_box(data) -> go.Figure:
-    """Box plot of satisfaction distribution per branch type (dark→light fills)."""
-    order = ["Office Area", "Mall", "Stand Alone", "University"]
-    types = [t for t in order if t in data["branch_type"].unique()]
-    fills = ["#3B2410", "#6B4B2A", "#BFA163", "#EBD9A8"]
-    fig = go.Figure()
-    for i, btype in enumerate(types):
-        vals = data[data["branch_type"] == btype]["customer_satisfaction"]
-        fig.add_trace(go.Box(
-            y=vals, name=btype,
-            fillcolor=fills[i % len(fills)],
-            line=dict(color="#2C1A0E", width=1.1),
-            marker=dict(color="#2C1A0E", size=4),
-            boxpoints="outliers",
-        ))
-    fig.update_layout(showlegend=False)
-    return fig
-
-
-def satisfaction_promo_bar(sat_df) -> go.Figure:
-    """Vertical gradient bars of avg satisfaction per promo type (dark→light)."""
-    d = sat_df.sort_values("avg_satisfaction", ascending=False).reset_index(drop=True)
-    cats = d.iloc[:, 0].tolist()
-    vals = d["avg_satisfaction"].tolist()
-    shades = ["#4A2E16", "#6B4423", "#8B6B3D", "#B3934F", "#D4B571", "#EAD9A6"]
-    colors = [shades[i % len(shades)] for i in range(len(cats))]
-    fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=cats, y=vals,
-        marker=dict(color=colors, line=dict(color=COLORS["text"], width=0.8)),
-        width=0.56,
-        text=[f"{v:.2f}" for v in vals],
-        textposition="outside",
-        textfont=dict(size=11, color=COLORS["text"]),
-        hovertemplate="<b>%{x}</b><br>Avg Satisfaction: %{y:.2f}<extra></extra>",
-        showlegend=False,
-    ))
-    return fig
 
 
 # ── KPI: baris horizontal di atas ─────────────────────────────────────────

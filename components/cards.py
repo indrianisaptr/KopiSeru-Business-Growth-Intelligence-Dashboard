@@ -134,7 +134,7 @@ def section_header(title: str, subtitle: str = "") -> None:
             <img src="{logo_b64}" style="height:56px; width:56px; object-fit:contain; flex-shrink:0;">
             <div>
                 <div style="font-size:15px; font-weight:700; letter-spacing:0.08em;
-                            text-transform:uppercase; color:#BF9447; margin-bottom:2px;">
+                            text-transform:uppercase; color:#FFEDAC; margin-bottom:2px;">
                     KopiSeru
                 </div>
                 <div style="font-size:24px; font-weight:800; color:#F1EEEA; line-height:1.15;">
@@ -880,7 +880,7 @@ def inject_compact_css() -> None:
         .kpi-card {
             position: relative;
             overflow: hidden;
-            background: linear-gradient(180deg, #FBF6F0 0%, #F7EFE6 100%);
+            background: linear-gradient(180deg, #6F4E37 0%, #4A2A1D 100%);
             border-radius: 16px;
             padding: 18px 18px 16px 18px;    
             z-index: 0;
@@ -902,10 +902,7 @@ def inject_compact_css() -> None:
             color: #6f4e37;
             font-size: 16px;
             margin-bottom: 10px;
-            box-shadow:
-                0 3px 6px rgba(90, 60, 30, 0.18),      /* drop shadow */
-                inset 0 1px 2px rgba(255, 255, 255, 0.7),  /* inner shadow terang (atas) */
-                inset 0 -2px 3px rgba(0, 0, 0, 0.08);      /* inner shadow gelap (bawah) */
+            box-shadow: none;
         }
         .kpi-icon-badge {
             display: inline-flex;
@@ -923,18 +920,15 @@ def inject_compact_css() -> None:
             color: #6f4e37;
             font-size: 16px;
             margin-bottom: 10px;
-            box-shadow:
-                0 3px 6px rgba(90, 60, 30, 0.18),
-                inset 0 1px 2px rgba(255, 255, 255, 0.7),
-                inset 0 -2px 3px rgba(0, 0, 0, 0.08);
+            box-shadow: none;
         }
         .kpi-icon-watermark {
             position: absolute;
             top: 0px;
             right: 10px;
             font-size: 46px;
-            color: #6f4e37;
-            opacity: 0.12;
+            color: #D4A853;
+            opacity: 0.16;
             pointer-events: none;
             z-index: 0;
         }
@@ -944,7 +938,7 @@ def inject_compact_css() -> None:
             font-weight: 700;
             letter-spacing: 0.05em;
             text-transform: uppercase;
-            color: #8a7364;
+            color: #F1EEEA;
             margin-bottom: 4px;
             padding-right: 0px;
             white-space: nowrap;
@@ -954,7 +948,7 @@ def inject_compact_css() -> None:
         .kpi-value {
             font-size: 20px;
             font-weight: 800;
-            color: #4A2C17;
+            color: #F1EEEA;
             line-height: 1.1;
         }
 
@@ -968,7 +962,7 @@ def inject_compact_css() -> None:
 
         .kpi-caption {
             font-size: 11px;
-            color: #a08b7a;
+            color: #F1EEEA;
             margin-top: 1px;
         }
         """,

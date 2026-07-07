@@ -22,11 +22,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
         section[data-testid="stSidebar"] > div:first-child {
             background: linear-gradient(180deg, #402218 0%, #6d4329 100%) !important;
             min-height: 100vh !important;
-        }
-        section[data-testid="stSidebar"] > div:first-child {
-            background: linear-gradient(180deg, #402218 0%, #6d4329 100%) !important;
-            min-height: 100vh !important;
-            box-shadow: inset -4px 0 12px rgba(0, 0, 0, 0.18) !important;  /* ← baru */
+            box-shadow: inset -4px 0 12px rgba(0, 0, 0, 0.18) !important;
         }
         section[data-testid="stSidebar"] {
             border-right: 1px solid rgba(200, 155, 109, 0.2) !important;
@@ -168,15 +164,6 @@ def render_sidebar(df: pd.DataFrame) -> dict:
         section[data-testid="stSidebar"] [data-testid="stCaptionContainer"],
         section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] * {
             color: #ffffff !important;
-        }
-
-        /* Page links (nav) */
-        section[data-testid="stSidebar"] a {
-            color: #ffffff !important;
-        }
-        section[data-testid="stSidebar"] a:hover {
-            color: #D4A853 !important;
-            background-color: rgba(212, 168, 83, 0.15) !important;
         }
 
         /* Sidebar collapse/expand button */

@@ -13,5 +13,6 @@ from .charts import (
     channel_pie, channel_stacked_bar, channel_trend_line, delivery_share_city,
     satisfaction_histogram, satisfaction_by_factor_bar,
     satisfaction_trend, satisfaction_weather_box,
+    satisfaction_branch_box, satisfaction_promo_bar, 
 )
 from .ai_analyst import ask_ai, generate_page_insight, render_business_copilot

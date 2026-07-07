@@ -465,6 +465,46 @@ def satisfaction_histogram(df: pd.DataFrame) -> go.Figure:
     return fig
 
 
+def satisfaction_branch_box(data: pd.DataFrame) -> go.Figure:
+    """Box plot of satisfaction distribution per branch type (dark→light fills)."""
+    order = ["Office Area", "Mall", "Stand Alone", "University"]
+    types = [t for t in order if t in data["branch_type"].unique()]
+    fills = ["#3B2410", "#6B4B2A", "#BFA163", "#EBD9A8"]
+    fig = go.Figure()
+    for i, btype in enumerate(types):
+        vals = data[data["branch_type"] == btype]["customer_satisfaction"]
+        fig.add_trace(go.Box(
+            y=vals, name=btype,
+            fillcolor=fills[i % len(fills)],
+            line=dict(color="#2C1A0E", width=1.1),
+            marker=dict(color="#2C1A0E", size=4),
+            boxpoints="outliers",
+        ))
+    fig.update_layout(showlegend=False)
+    return fig
+
+
+def satisfaction_promo_bar(sat_df: pd.DataFrame) -> go.Figure:
+    """Vertical gradient bars of avg satisfaction per promo type (dark→light)."""
+    d = sat_df.sort_values("avg_satisfaction", ascending=False).reset_index(drop=True)
+    cats = d.iloc[:, 0].tolist()
+    vals = d["avg_satisfaction"].tolist()
+    shades = ["#4A2E16", "#6B4423", "#8B6B3D", "#B3934F", "#D4B571", "#EAD9A6"]
+    colors = [shades[i % len(shades)] for i in range(len(cats))]
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=cats, y=vals,
+        marker=dict(color=colors, line=dict(color=COLORS["text"], width=0.8)),
+        width=0.56,
+        text=[f"{v:.2f}" for v in vals],
+        textposition="outside",
+        textfont=dict(size=11, color=COLORS["text"]),
+        hovertemplate="<b>%{x}</b><br>Avg Satisfaction: %{y:.2f}<extra></extra>",
+        showlegend=False,
+    ))
+    return fig
+
+
 def satisfaction_by_factor_bar(sat_df: pd.DataFrame, factor_label: str) -> go.Figure:
     """Bar chart of avg satisfaction by a given factor."""
     d = sat_df.sort_values("avg_satisfaction", ascending=True)
@@ -497,7 +537,7 @@ def satisfaction_trend(df: pd.DataFrame) -> go.Figure:
     g = g.sort_values("date")
     overall_mean = df["customer_satisfaction"].mean()
 
-    year_colors = ["#5C3D1E", "#E8631C", "#E8B24B", "#8B5E3C", "#D4A853"]
+    year_colors = [COLORS["primary"], COLORS["accent"], COLORS["success"]]
 
     fig = go.Figure()
     for i, yr in enumerate(sorted(g["year"].unique())):
@@ -540,7 +580,7 @@ def satisfaction_trend(df: pd.DataFrame) -> go.Figure:
 def satisfaction_weather_box(df: pd.DataFrame) -> go.Figure:
     """Box plot of satisfaction per weather type."""
     fig = go.Figure()
-    colors = [COLORS["primary"], COLORS["accent"], COLORS["secondary"], COLORS["success"]]
+    colors = [COLORS["primary"], COLORS["secondary"], COLORS["accent"], COLORS["warning"]]
     for i, weather in enumerate(df["weather"].unique()):
         d = df[df["weather"] == weather]["customer_satisfaction"]
         fig.add_trace(go.Box(

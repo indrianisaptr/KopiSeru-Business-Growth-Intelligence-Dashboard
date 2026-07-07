@@ -9,6 +9,7 @@ import streamlit as st
 from pathlib import Path
 from utils.icons import svg
 
+@st.cache_data
 def _img_b64(path: str) -> str:
     """Read a local image and return it as a base64 data URI for inline HTML."""
     img_path = Path(__file__).parent / path
@@ -41,8 +42,6 @@ pages = [
 ]
 
 nav = st.navigation(pages, position="hidden")
-
-# Sidebar gradient — target div pertama yang diberi warna oleh Streamlit theme
 st.markdown(
     """
     <style>
@@ -62,6 +61,7 @@ st.markdown(
 
 with st.sidebar:
     _logo_b64 = _img_b64("assets/Icon_topi.png")
+    _wordmark_b64 = _img_b64("assets/LogoKopiSeru.png")
     st.markdown(
         f"""
         <div style="text-align:center; padding: 0px 0 10px 0;">
@@ -70,9 +70,8 @@ with st.sidebar:
                 <img src="{_logo_b64}" style="height:80px; width:auto;
                      vertical-align:middle; margin-right:6px;">
             </div>
-            <div style="font-size:22px; font-weight:800; color:#F6F4F2;
-                        letter-spacing:0.04em; margin-top:2px;">
-                KopiSeru
+            <div style="margin-top:8px;">
+                <img src="{_wordmark_b64}" style="height:28px; width:auto;">
             </div>
             <div style="font-size:15px; color:#C8A882;
                         margin-top:2px;">
@@ -84,9 +83,44 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    # ── Navigasi halaman (di bawah logo) ────────────────────────────────────
-    for page in pages:
-        st.page_link(page, icon=page.icon)
+    # Deteksi halaman aktif secara Python DULU, sebelum render apapun
+    _active_idx = None
+    for _i, _p in enumerate(pages, start=1):
+        if _p.url_path == nav.url_path:
+            _active_idx = _i
+            break
+
+    # Inject CSS SEBELUM elemen nav dirender, supaya tidak ada jeda/flash
+    if _active_idx:
+        st.markdown(
+            f"""
+            <style>
+            section[data-testid="stSidebar"] [data-testid="stPageLink"] a {{
+                transition: none !important;
+                animation: none !important;
+            }}
+            div[class*="st-key-navlink_{_active_idx}"] [data-testid="stPageLink"] a {{
+                background: rgba(212, 168, 83, 0.12) !important;
+                border: 1.5px solid #D4A853 !important;
+                color: #D4A853 !important;
+                font-weight: 800 !important;
+            }}
+            div[class*="st-key-navlink_{_active_idx}"] [data-testid="stPageLink"] a p {{
+                color: #D4A853 !important;
+            }}
+            div[class*="st-key-navlink_{_active_idx}"] [data-testid="stPageLink"] svg {{
+                color: #D4A853 !important;
+                filter: none !important;
+            }}
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    # ── Navigasi halaman (di bawah logo), tiap link dibungkus key unik ──────
+    for _i, page in enumerate(pages, start=1):
+        with st.container(key=f"navlink_{_i}"):
+            st.page_link(page, icon=page.icon)
 
     st.markdown("<hr style='border:1px solid rgba(245,230,211,0.2); margin:12px 0;'>", unsafe_allow_html=True)
 
