@@ -7,17 +7,17 @@ Mengikuti pola 1_Executive_Summary.py.
 """
 
 import streamlit as st
+import plotly.graph_objects as go
 from utils.icons import svg
 from utils import (
     load_data, apply_filters, build_summary_stats,
-    satisfaction_by_factor, channel_distribution, channel_by_type,
-    city_performance
+    satisfaction_by_factor,
 )
+from utils.data_loader import COLORS
 from components import (
     render_sidebar, section_header, metric_card, info_box,
-    satisfaction_histogram, satisfaction_by_factor_bar,
+    satisfaction_histogram,
     satisfaction_trend, satisfaction_weather_box,
-    channel_pie, channel_stacked_bar, delivery_share_city,
 )
 from components.cards import inject_compact_css
 
@@ -55,14 +55,9 @@ avg_sat  = stats["avg_satisfaction"]
 
 # ── Aggregates (dipakai chart + panel insight) ────────────────────────────
 sat_by_type  = satisfaction_by_factor(df, "branch_type")
-sat_by_day   = satisfaction_by_factor(df, "day_type")
-sat_by_promo = satisfaction_by_factor(df, "promo_label")
+sat_by_promo = satisfaction_by_factor(df, "promo_type")
 best_type    = sat_by_type.iloc[0]
 worst_type   = sat_by_type.iloc[-1]
-
-ch_df      = channel_distribution(df)
-ch_type_df = channel_by_type(df)
-city_df    = city_performance(df)
 
 
 def _chart_header(title: str, key: str, chart_title: str, chart_df, compact: bool = False) -> None:
@@ -70,11 +65,44 @@ def _chart_header(title: str, key: str, chart_title: str, chart_df, compact: boo
     st.markdown(f"#### {title}")
 
 
-def _hlegend_top(fig):
-    fig.update_layout(legend=dict(
-        font=dict(size=9.5), orientation="h",
-        yanchor="bottom", y=1.05, xanchor="center", x=0.5,
+def satisfaction_branch_box(data) -> go.Figure:
+    """Box plot of satisfaction distribution per branch type (dark→light fills)."""
+    order = ["Office Area", "Mall", "Stand Alone", "University"]
+    types = [t for t in order if t in data["branch_type"].unique()]
+    fills = ["#3B2410", "#6B4B2A", "#BFA163", "#EBD9A8"]
+    fig = go.Figure()
+    for i, btype in enumerate(types):
+        vals = data[data["branch_type"] == btype]["customer_satisfaction"]
+        fig.add_trace(go.Box(
+            y=vals, name=btype,
+            fillcolor=fills[i % len(fills)],
+            line=dict(color="#2C1A0E", width=1.1),
+            marker=dict(color="#2C1A0E", size=4),
+            boxpoints="outliers",
+        ))
+    fig.update_layout(showlegend=False)
+    return fig
+
+
+def satisfaction_promo_bar(sat_df) -> go.Figure:
+    """Vertical gradient bars of avg satisfaction per promo type (dark→light)."""
+    d = sat_df.sort_values("avg_satisfaction", ascending=False).reset_index(drop=True)
+    cats = d.iloc[:, 0].tolist()
+    vals = d["avg_satisfaction"].tolist()
+    shades = ["#4A2E16", "#6B4423", "#8B6B3D", "#B3934F", "#D4B571", "#EAD9A6"]
+    colors = [shades[i % len(shades)] for i in range(len(cats))]
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=cats, y=vals,
+        marker=dict(color=colors, line=dict(color=COLORS["text"], width=0.8)),
+        width=0.56,
+        text=[f"{v:.2f}" for v in vals],
+        textposition="outside",
+        textfont=dict(size=11, color=COLORS["text"]),
+        hovertemplate="<b>%{x}</b><br>Avg Satisfaction: %{y:.2f}<extra></extra>",
+        showlegend=False,
     ))
+    return fig
 
 
 # ── KPI: baris horizontal di atas ─────────────────────────────────────────
@@ -92,51 +120,72 @@ with st.container(key="kpicol_std"):
 st.markdown("<div style='margin-top:0.6rem;'></div>", unsafe_allow_html=True)
 
 if True:
-    # ── HERO: Satisfaction Distribution (Customer Distribution) ────────────
+    # ── ROW 1: Satisfaction Distribution (full width, 1 chart) ─────────────
     with st.container(border=True, key="chartbox_sat_hist"):
         _chart_header("Satisfaction Distribution", "satisfaction_hist",
                       "Customer Satisfaction Distribution",
                       df[["customer_satisfaction"]])
         fig = satisfaction_histogram(df)
-        fig.update_layout(title="", height=320,
+        fig.update_layout(title="", height=300,
                           margin=dict(l=34, r=10, t=34, b=10), showlegend=False)
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-    # ── SECONDARY: Satisfaction by Branch Type | Channel Distribution ──────
-    r1c1, r1c2 = st.columns(2, gap="small")
-    with r1c1:
+    # ── ROW 2: Branch Type box | Promo bar | Weather box (3 charts) ────────
+    r2c1, r2c2, r2c3 = st.columns(3, gap="small")
+    with r2c1:
         with st.container(border=True, key="chartbox_sat_branch"):
-            _chart_header("Satisfaction by Branch Type", "satisfaction_branch_type",
-                          "Satisfaction by Branch Type", sat_by_type, compact=True)
-            fig = satisfaction_by_factor_bar(sat_by_type, "branch_type")
-            fig.update_layout(title="", height=260, showlegend=False,
-                              margin=dict(l=8, r=28, t=6, b=36),
-                              xaxis=dict(automargin=True), yaxis=dict(automargin=True))
+            _chart_header("Satisfaction Distribution by Branch Type",
+                          "satisfaction_branch_type",
+                          "Satisfaction Distribution by Branch Type",
+                          sat_by_type, compact=True)
+            fig = satisfaction_branch_box(df)
+            fig.update_layout(title="", height=220, showlegend=False,
+                              paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                              font=dict(color=COLORS["text"], size=10.5),
+                              margin=dict(l=8, r=10, t=6, b=36),
+                              yaxis=dict(title="Satisfaction Score", automargin=True),
+                              xaxis=dict(automargin=True))
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
-    with r1c2:
-        with st.container(border=True, key="chartbox_channel_dist"):
-            _chart_header("Channel Distribution", "channel_distribution",
-                          "Overall Channel Distribution", ch_df, compact=True)
-            fig = channel_pie(ch_df)
-            fig.update_traces(hole=0.32, textfont=dict(size=11))
-            fig.update_layout(title="", height=260, margin=dict(l=4, r=4, t=6, b=34),
-                              legend=dict(font=dict(size=9.5), orientation="h",
-                                          yanchor="bottom", y=-0.22, xanchor="center", x=0.5))
+    with r2c2:
+        with st.container(border=True, key="chartbox_sat_promo"):
+            _chart_header("Average Satisfaction by Promo Type",
+                          "satisfaction_promo_type",
+                          "Average Satisfaction by Promo Type",
+                          sat_by_promo, compact=True)
+            fig = satisfaction_promo_bar(sat_by_promo)
+            fig.update_layout(title="", height=220, showlegend=False,
+                              margin=dict(l=8, r=10, t=18, b=60),
+                              yaxis=dict(range=[0, 5.4], dtick=1,
+                                         title="Avg Satisfaction", automargin=True),
+                              xaxis=dict(tickangle=-40, tickfont=dict(size=8),
+                                         automargin=True))
+            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
+    with r2c3:
+        with st.container(border=True, key="chartbox_sat_weather"):
+            _chart_header("Customer Satisfaction by Weather",
+                          "satisfaction_weather",
+                          "Customer Satisfaction by Weather", df, compact=True)
+            fig = satisfaction_weather_box(df)
+            fig.update_layout(title="", height=220, showlegend=False,
+                              margin=dict(l=8, r=10, t=6, b=36),
+                              yaxis=dict(title="Satisfaction Score", automargin=True),
+                              xaxis=dict(automargin=True))
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-    # ── SUPPORTING: Delivery Readiness by City (full width, lebih kecil) ───
-    with st.container(border=True, key="chartbox_delivery_city"):
-        _chart_header("Delivery Readiness by City", "delivery_readiness_city",
-                      "Delivery Market Readiness by City", city_df)
-        fig = delivery_share_city(city_df, df)
-        fig.update_layout(title="", height=220, showlegend=False,
-                          margin=dict(l=34, r=10, t=20, b=60),
-                          xaxis=dict(automargin=True), yaxis=dict(automargin=True))
+    # ── ROW 3: Monthly Avg Customer Satisfaction Trend (full width) ────────
+    with st.container(border=True, key="chartbox_sat_trend"):
+        _chart_header("Monthly Average Customer Satisfaction Trend",
+                      "satisfaction_trend",
+                      "Monthly Average Customer Satisfaction Trend", df)
+        fig = satisfaction_trend(df)
+        fig.update_layout(title="", height=300,
+                          margin=dict(l=34, r=95, t=10, b=45))
         st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)

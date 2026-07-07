@@ -488,30 +488,51 @@ def satisfaction_by_factor_bar(sat_df: pd.DataFrame, factor_label: str) -> go.Fi
 
 
 def satisfaction_trend(df: pd.DataFrame) -> go.Figure:
-    """Monthly satisfaction trend per year."""
+    """Monthly avg satisfaction on a continuous timeline, colored per year."""
     g = (
         df.groupby(["year", "month"], as_index=False)
         .agg(avg_sat=("customer_satisfaction", "mean"))
     )
+    g["date"] = pd.to_datetime(dict(year=g["year"], month=g["month"], day=1))
+    g = g.sort_values("date")
     overall_mean = df["customer_satisfaction"].mean()
+
+    year_colors = ["#5C3D1E", "#E8631C", "#E8B24B", "#8B5E3C", "#D4A853"]
+
     fig = go.Figure()
-    colors = [COLORS["primary"], COLORS["accent"], COLORS["success"]]
     for i, yr in enumerate(sorted(g["year"].unique())):
-        d = g[g["year"] == yr].sort_values("month")
+        d = g[g["year"] == yr]
         fig.add_trace(go.Scatter(
-            x=d["month"], y=d["avg_sat"],
+            x=d["date"], y=d["avg_sat"],
             name=str(yr),
             mode="lines+markers",
-            line=dict(color=colors[i % len(colors)], width=2),
+            line=dict(color=year_colors[i % len(year_colors)], width=2),
             marker=dict(size=6),
+            hovertemplate="%{x|%Y-%m}<br>Avg Satisfaction: %{y:.2f}<extra></extra>",
         ))
-    fig.add_hline(y=overall_mean, line_color="#999", line_dash="dot",
-                  annotation_text=f"Overall Mean {overall_mean:.2f}")
+    xmin, xmax = g["date"].min(), g["date"].max()
+    fig.add_trace(go.Scatter(
+        x=[xmin, xmax], y=[overall_mean, overall_mean],
+        mode="lines", name="Overall Mean",
+        line=dict(color="#999", dash="dash", width=1.3),
+        hovertemplate=f"Overall Mean: {overall_mean:.2f}<extra></extra>",
+    ))
+
+    layout = _base_layout(height=340)
+    # legend outside the plot area (right side) so it never overlaps the lines
+    layout["legend"] = dict(
+        title=dict(text="Tahun", font=dict(size=10)),
+        font=dict(size=9.5),
+        orientation="v",
+        yanchor="top", y=1.0, xanchor="left", x=1.01,
+    )
     fig.update_layout(
-        title="Monthly Customer Satisfaction Trend",
-        xaxis=_axis_style("Month"),
-        yaxis=dict(range=[1, 5], **_axis_style("Avg Satisfaction")),
-        **_base_layout(height=340),
+        title=dict(text="<b>Monthly Average Customer Satisfaction Trend</b>",
+                   font=dict(size=14, color=COLORS["text"]), x=0.5, xanchor="center"),
+        xaxis=dict(type="date", dtick="M4", tickformat="%Y-%m",
+                   tickangle=0, **_axis_style("")),
+        yaxis=dict(range=[1, 5.5], dtick=0.5, **_axis_style("Avg Satisfaction Score")),
+        **layout,
     )
     return fig
 
