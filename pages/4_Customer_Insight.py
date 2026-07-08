@@ -102,12 +102,12 @@ if True:
                           "Satisfaction Distribution by Branch Type",
                           sat_by_type, compact=True)
             fig = satisfaction_branch_box(df)
-            fig.update_layout(title="", height=220, showlegend=False,
-                              paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                              font=dict(color=COLORS["text"], size=10.5),
-                              margin=dict(l=8, r=10, t=6, b=36),
-                              yaxis=dict(title="Satisfaction Score", automargin=True),
-                              xaxis=dict(automargin=True))
+            fig.update_layout(title="", height=290, showlegend=False,
+                            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                            font=dict(color=COLORS["text"], size=11.5),
+                            margin=dict(l=10, r=12, t=8, b=42),
+                            yaxis=dict(title="Satisfaction Score", automargin=True),
+                            xaxis=dict(automargin=True))
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     with r2c2:
@@ -117,12 +117,12 @@ if True:
                           "Average Satisfaction by Promo Type",
                           sat_by_promo, compact=True)
             fig = satisfaction_promo_bar(sat_by_promo)
-            fig.update_layout(title="", height=220, showlegend=False,
-                              margin=dict(l=8, r=10, t=18, b=60),
-                              yaxis=dict(range=[0, 5.4], dtick=1,
-                                         title="Avg Satisfaction", automargin=True),
-                              xaxis=dict(tickangle=-40, tickfont=dict(size=8),
-                                         automargin=True))
+            fig.update_layout(title="", height=290, showlegend=False,
+                            margin=dict(l=10, r=12, t=20, b=70),
+                            yaxis=dict(range=[0, 5.4], dtick=1,
+                                        title="Avg Satisfaction", automargin=True),
+                            xaxis=dict(tickangle=-40, tickfont=dict(size=10),
+                                        automargin=True))
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     with r2c3:
@@ -131,10 +131,10 @@ if True:
                           "satisfaction_weather",
                           "Customer Satisfaction by Weather", df, compact=True)
             fig = satisfaction_weather_box(df)
-            fig.update_layout(title="", height=220, showlegend=False,
-                              margin=dict(l=8, r=10, t=6, b=36),
-                              yaxis=dict(title="Satisfaction Score", automargin=True),
-                              xaxis=dict(automargin=True))
+            fig.update_layout(title="", height=290, showlegend=False,
+                            margin=dict(l=10, r=12, t=8, b=42),
+                            yaxis=dict(title="Satisfaction Score", automargin=True),
+                            xaxis=dict(automargin=True))
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
@@ -154,6 +154,15 @@ if True:
     # ── BUSINESS HIGHLIGHTS: ringkasan statis, full width ──────────────────
     with st.container(border=True, key="sidepanel_insights"):
         st.markdown("#### Business Highlights")
+        st.markdown(
+            """
+            <div style="font-size:11px; color:var(--text-muted); margin:-18px 0 18px 0; line-height:1.6;">
+                Highlights what drives customer satisfaction and where it falls short, so
+                the team can focus improvement efforts where they'll have the most impact.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         info_box(
             f'{svg("SMILE")} <b>Drivers:</b> {best_type["branch_type"]} tops '
             f'({best_type["avg_satisfaction"]:.2f}); atmosphere & service speed matter most',

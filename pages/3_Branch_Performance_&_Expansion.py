@@ -65,7 +65,7 @@ def _chart_header(title: str, key: str, chart_title: str, chart_df, compact: boo
 
 def _hlegend_top(fig):
     fig.update_layout(legend=dict(
-        font=dict(size=9.5), orientation="h",
+        font=dict(size=13), orientation="h",
         yanchor="bottom", y=1.05, xanchor="center", x=0.5,
     ))
 
@@ -122,8 +122,8 @@ if True:
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-    # ── SUPPORTING: Saturation | Channel Mix | Delivery Share ──────────────
-    r2c1, r2c2, r2c3 = st.columns(3, gap="small")
+    # ── SUPPORTING: Delivery Share | Channel Mix ────────────────────────────
+    r2c1, r2c2 = st.columns(2, gap="small")
 
     with r2c1:
         with st.container(border=True, key="chartbox_delivery_city"):
@@ -136,16 +136,6 @@ if True:
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     with r2c2:
-        with st.container(border=True, key="chartbox_saturation"):
-            _chart_header("Saturation vs Profitability", "saturation_matrix",
-                          "Market Saturation vs Profitability Matrix", city_df, compact=True)
-            fig = city_bubble(city_df)
-            fig.update_layout(title="", height=220, showlegend=False,
-                              margin=dict(l=34, r=12, t=26, b=40),
-                              xaxis=dict(automargin=True), yaxis=dict(automargin=True))
-            st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
-
-    with r2c3:
         with st.container(border=True, key="chartbox_channel_mix"):
             _chart_header("Channel Mix by Branch Type", "channel_mix_type",
                           "Channel Mix by Branch Type", ch_type_df, compact=True)
@@ -157,9 +147,30 @@ if True:
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
+    # ── Saturation vs Profitability (full width) ────────────────────────────
+    with st.container(border=True, key="chartbox_saturation"):
+        _chart_header("Saturation vs Profitability", "saturation_matrix",
+                      "Market Saturation vs Profitability Matrix", city_df, compact=True)
+        fig = city_bubble(city_df, expansion_df)
+        fig.update_layout(title="", height=300, showlegend=False,
+                          margin=dict(l=36, r=58, t=26, b=42),
+                          xaxis=dict(automargin=True), yaxis=dict(automargin=True))
+        st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+
+    st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
+
     # ── BUSINESS HIGHLIGHTS: ringkasan statis, full width ──────────────────
     with st.container(border=True, key="sidepanel_insights"):
         st.markdown("#### Business Highlights")
+        st.markdown(
+            """
+            <div style="font-size:11px; color:var(--text-muted); margin:-18px 0 18px 0; line-height:1.6;">
+                Compares branch type profitability and ranks expansion candidates, helping
+                prioritize where to invest and which branch types need improvement first.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         info_box(
             f'{svg("PIN")} <b>Best:</b> {best_type["branch_type"]} leads at '
             f'{best_type["avg_profit_margin"]:.1f}% margin',

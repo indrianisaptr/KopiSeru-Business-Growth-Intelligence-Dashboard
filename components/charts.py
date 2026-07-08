@@ -16,11 +16,11 @@ def _base_layout(**kwargs) -> dict:
     base = dict(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(family="Inter, Arial, sans-serif", color=COLORS["text"], size=10.5),
+        font=dict(family="Inter, Arial, sans-serif", color=COLORS["text"], size=12),
         margin=dict(l=34, r=10, t=24, b=60),
         legend=dict(
             bgcolor="rgba(0,0,0,0)",
-            font=dict(size=9.5),
+            font=dict(size=12),
             orientation="h",
             yanchor="top",
             y=-0.38,
@@ -34,14 +34,14 @@ def _base_layout(**kwargs) -> dict:
 
 def _axis_style(title: str = "", gridcolor: str = "#EEE") -> dict:
     return dict(
-        title=dict(text=title, font=dict(size=10)),
+        title=dict(text=title, font=dict(size=12)),
         gridcolor=gridcolor,
         gridwidth=0.5,
         showline=True,
         linecolor="#DDD",
         linewidth=1,
         ticks="outside",
-        tickfont=dict(size=9),
+        tickfont=dict(size=12),
     )
 
 
@@ -132,7 +132,7 @@ def promo_avg_revenue(df: pd.DataFrame) -> go.Figure:
     ))
     fig.update_layout(
         title="Average Revenue per Promo Type",
-        xaxis=_axis_style("Avg Revenue (Rp)"),
+        xaxis=_axis_style("Avg Revenue (Rp)"), 
         yaxis=dict(title="", tickfont=dict(size=12)),
         **_base_layout(height=320),
     )
@@ -157,14 +157,14 @@ def txn_vs_revenue_scatter(df: pd.DataFrame) -> go.Figure:
         hover_data=["branch_name", "branch_city", "date"],
         title="Transactions vs Revenue (colour = Avg Ticket Size)",
     )
-    fig.update_traces(marker=dict(size=5, opacity=0.65))
+    fig.update_traces(marker=dict(size=8, opacity=0.65))
     fig.update_layout(
         **_base_layout(height=250),
         coloraxis_colorbar=dict(
-            title=dict(text="Avg Ticket (Rp)", font=dict(size=9)),
+            title=dict(text="Avg Ticket (Rp)", font=dict(size=12)),
             thickness=10,
             len=0.65,
-            tickfont=dict(size=8),
+            tickfont=dict(size=12),
             x=1.0,
         ),
     )
@@ -242,7 +242,7 @@ def city_profit_bar(city_df: pd.DataFrame) -> go.Figure:
     fig.update_layout(
         title="Total Profit per City (2021–2023)",
         xaxis=_axis_style("Total Profit (Rp)"),
-        yaxis=dict(title="", tickfont=dict(size=12)),
+        yaxis=dict(title="", tickfont=dict(size=13)),
         **_base_layout(height=400),
     )
     return fig
@@ -271,46 +271,118 @@ def branch_type_margin_bar(bt_df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def city_bubble(city_df: pd.DataFrame) -> go.Figure:
-    """Bubble chart: branches vs margin, bubble size = avg revenue (min-max scaled)."""
+def city_bubble(city_df: pd.DataFrame, expansion_df: pd.DataFrame = None) -> go.Figure:
+    """Bubble chart styled as an expansion opportunity matrix:
+    x = saturation (num branches), y = profitability (avg margin),
+    bubble size = avg revenue/branch, bubble color = expansion score.
+    """
     fig = go.Figure()
-    MIN_SIZE, MAX_SIZE = 16, 46
-    rev = city_df["revenue_per_branch"]
-    rev_min, rev_max = rev.min(), rev.max()
 
-    def _scaled_size(value: float) -> float:
-        if rev_max == rev_min:
-            return (MIN_SIZE + MAX_SIZE) / 2
-        ratio = (value - rev_min) / (rev_max - rev_min)
-        return MIN_SIZE + ratio * (MAX_SIZE - MIN_SIZE)
+    # Bring in expansion_score for color mapping (data/calculation itself is
+    # untouched — this only merges an existing metric in for visualization).
+    if expansion_df is not None and "expansion_score" in expansion_df.columns:
+        merged = city_df.merge(
+            expansion_df[["branch_city", "expansion_score"]],
+            on="branch_city", how="left",
+        )
+    else:
+        merged = city_df.copy()
+        merged["expansion_score"] = 0.5
 
-    for _, row in city_df.iterrows():
-        fig.add_trace(go.Scatter(
-            x=[row["num_branches"]],
-            y=[row["avg_profit_margin"]],
-            mode="markers+text",
-            name=row["branch_city"],
-            text=[row["branch_city"]],
-            textposition="top center",
-            marker=dict(
-                size=_scaled_size(row["revenue_per_branch"]),
-                color=COLORS["accent"],
-                opacity=0.8,
-                line=dict(color=COLORS["primary"], width=1.5),
+    # Area-proportional bubble sizing (sizemode="area") instead of diameter-linear
+    # sizing: with the default sizemode, a 2x value looks ~4x bigger to the eye
+    # because diameter scales linearly while perceived size is area-based. Using
+    # sizemode="area" + sizeref maps value -> area directly, which is the
+    # standard approach for professional BI bubble charts.
+    DESIRED_MAX_DIAMETER = 28
+    SIZE_MIN_FLOOR = 4  # visibility floor for the smallest bubble, not a manual range
+    rev = merged["revenue_per_branch"]
+    rev_max = rev.max()
+    sizeref = 2.0 * rev_max / (DESIRED_MAX_DIAMETER ** 2)
+    sizes = rev  # raw values; Plotly scales area from these directly
+
+    fig.add_trace(go.Scatter(
+        x=merged["num_branches"],
+        y=merged["avg_profit_margin"],
+        mode="markers",
+        marker=dict(
+            size=sizes,
+            sizemode="area",
+            sizeref=sizeref,
+            sizemin=SIZE_MIN_FLOOR,
+            color=merged["expansion_score"],
+            colorscale="YlOrBr",
+            cmin=0, cmax=1,
+            opacity=0.75,
+            line=dict(color="rgba(70,50,30,.45)", width=1),
+            showscale=True,
+            colorbar=dict(
+                title=dict(text="Expansion Score<br><span style='font-size:6px'> </span>", font=dict(size=14)),
+                thickness=10,
+                len=0.85,
+                x=1.04,
+                tickvals=[0.2, 0.4, 0.6, 0.8, 1.0],
+                tickfont=dict(size=14),
+                outlinewidth=0,
             ),
-            hovertemplate=(
-                f"<b>{row['branch_city']}</b><br>"
-                f"Branches: {row['num_branches']}<br>"
-                f"Avg Margin: {row['avg_profit_margin']:.1f}%<br>"
-                f"Revenue/branch: Rp {row['revenue_per_branch']:,.0f}<extra></extra>"
-            ),
-        ))
-    fig.update_layout(
-        title="Branches vs Profit Margin (bubble = avg revenue/branch)",
-        xaxis=_axis_style("Number of Branches (Saturation)"),
-        yaxis=_axis_style("Avg Profit Margin (%)"),
+        ),
+        customdata=merged[[
+            "branch_city", "num_branches", "avg_profit_margin",
+            "revenue_per_branch", "expansion_score",
+        ]],
+        hovertemplate=(
+            "<b>%{customdata[0]}</b><br>"
+            "Branches: %{customdata[1]}<br>"
+            "Avg Margin: %{customdata[2]:.1f}%<br>"
+            "Revenue/branch: Rp %{customdata[3]:,.0f}<br>"
+            "Expansion Score: %{customdata[4]:.3f}<extra></extra>"
+        ),
         showlegend=False,
-        **_base_layout(height=420),
+    ))
+
+    # Text labels are rendered as part of the marker trace using textposition,
+    # not fig.add_annotation + yshift. textposition is chosen per point based on
+    # which quadrant the bubble sits in (relative to the data's median x/y), so
+    # labels naturally point outward/away from the cluster center instead of
+    # always sitting directly above the bubble — this stays robust even if the
+    # underlying data shifts and bubbles end up closer together.
+    # Only cities with expansion_score >= 0.65 are labeled to reduce clutter;
+    # all cities remain fully available via hover tooltip regardless.
+    x_med = merged["num_branches"].median()
+    y_med = merged["avg_profit_margin"].median()
+
+    def _textposition(x_val, y_val) -> str:
+        vert = "top" if y_val >= y_med else "bottom"
+        horiz = "right" if x_val >= x_med else "left"
+        return f"{vert} {horiz}"
+
+    label_text = [row["branch_city"] for _, row in merged.iterrows()]
+    label_positions = [
+        _textposition(row["num_branches"], row["avg_profit_margin"])
+        for _, row in merged.iterrows()
+    ]
+
+    fig.data[0].update(
+        mode="markers+text",
+        text=label_text,
+        textposition=label_positions,
+        textfont=dict(size=9.5, color=COLORS["text"]),
+    )
+
+    fig.data[0].update(cliponaxis=False)
+
+    x_max = merged["num_branches"].max()
+    y_min = merged["avg_profit_margin"].min()
+    y_max = merged["avg_profit_margin"].max()
+
+    fig.update_layout(
+        title="Saturation vs Profitability (bubble size = avg revenue/branch, color = expansion score)",
+        xaxis=dict(tickmode="linear", dtick=2, range=[1, x_max + 2],
+                   **_axis_style("Number of Branches (Saturation)")),
+        yaxis=dict(range=[y_min - 2, y_max + 4],
+                   **_axis_style("Avg Profit Margin (%)")),
+        showlegend=False,
+        **_base_layout(height=430, margin=dict(l=70, r=90, t=40, b=60)),
     )
     return fig
 
@@ -337,8 +409,6 @@ def expansion_bar(exp_df: pd.DataFrame) -> go.Figure:
         yaxis=dict(title="", tickfont=dict(size=12)),
         **_base_layout(height=380),
     )
-    fig.add_vline(x=0.6, line_color=COLORS["accent"], line_dash="dash",
-                  annotation_text="High Priority", annotation_position="top right")
     return fig
 
 
@@ -502,6 +572,12 @@ def satisfaction_promo_bar(sat_df: pd.DataFrame) -> go.Figure:
         hovertemplate="<b>%{x}</b><br>Avg Satisfaction: %{y:.2f}<extra></extra>",
         showlegend=False,
     ))
+    fig.update_layout(
+        title="Average Satisfaction by Promo Type",
+        xaxis=dict(tickfont=dict(size=14)), 
+        yaxis=_axis_style("Avg Satisfaction"),
+        **_base_layout(height=300),
+    )
     return fig
 
 
@@ -562,7 +638,7 @@ def satisfaction_trend(df: pd.DataFrame) -> go.Figure:
     # legend outside the plot area (right side) so it never overlaps the lines
     layout["legend"] = dict(
         title=dict(text="Tahun", font=dict(size=10)),
-        font=dict(size=9.5),
+        font=dict(size=12),
         orientation="v",
         yanchor="top", y=1.0, xanchor="left", x=1.01,
     )

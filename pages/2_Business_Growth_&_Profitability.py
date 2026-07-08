@@ -153,8 +153,7 @@ with row1_c3:
                          promo_summary.loc['Non-Promo', 'total_revenue']) - 1) * 100
         _chart_header("Promo vs Non-Promo", "promo_vs_nonpromo",
                       "Promo vs Non-Promo Revenue", promo_summary.reset_index(), compact=True,
-                      extra_text=f"Promo boost: {_promo_boost:.1f}%<br>"
-                                 "Effective for volume, but margin impact needs evaluation.",
+                      extra_text=f"Promo boost: {_promo_boost:.1f}%Effective for volume, but margin impact needs evaluation.",
                       extra_kind="info")
         fig_comp = go.Figure(data=[
             go.Bar(name='Avg Revenue',
@@ -165,12 +164,18 @@ with row1_c3:
         ])
         fig_comp.update_layout(
             title="",
-            xaxis_title="",
-            yaxis_title="Avg Revenue (Rp)",
+            xaxis=dict(
+                title=dict(text="", font=dict(size=14)),   
+                tickfont=dict(size=14),                     
+            ),
+            yaxis=dict(
+                title=dict(text="Avg Revenue (Rp)", font=dict(size=14)),  
+                tickfont=dict(size=14),                     
+            ),
             showlegend=False,
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
-            height=281,
+            height=300,
             margin=dict(l=34, r=10, t=10, b=34),
         )
         st.plotly_chart(fig_comp, use_container_width=True, config={"displayModeBar": False})
@@ -274,6 +279,8 @@ with row2_c3:
             st.plotly_chart(fig_profit, use_container_width=True, config={"displayModeBar": False})
 
 # ── Critical Finding (tetap dipertahankan persis) ─────────────────────────
+st.markdown("<div style='margin-top:1.5rem;'></div>", unsafe_allow_html=True)
+
 with st.expander("Weekend Profit Drop: Further Analysis & Recommended Actions", expanded=False):
     col_insight1, col_insight2 = st.columns(2, gap="small")
 
@@ -297,7 +304,7 @@ with st.expander("Weekend Profit Drop: Further Analysis & Recommended Actions", 
             kind="success"
         )
 
-st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top:1.4rem;'></div>", unsafe_allow_html=True)
 
 # ═══════════════════════════════════════════════════════════════════════
 # BUSINESS HIGHLIGHTS ringkasan statis memakai angka yang sudah dihitung
@@ -308,6 +315,15 @@ top_margin = city_df.nlargest(1, 'avg_profit_margin').iloc[0]
 
 with st.container(border=True, key="sidepanel_insights"):
     st.markdown("#### Business Highlights")
+    st.markdown(
+        """
+        <div style="font-size:11px; color:var(--text-muted); margin:-18px 0 18px 0; line-height:1.6;">
+            Summarizes which cities drive the most profit, how well promotions
+            pay off, and where weekend performance needs closer attention.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
     info_box(
         f"<b>Top Profit City:</b> {top_city['branch_city']} • "
         f"Total: Rp {top_city['total_profit']:,.0f}<br>"

@@ -101,7 +101,7 @@ if True:
             height=275,
             margin=dict(l=34, r=10, t=34, b=10),
             legend=dict(
-                font=dict(size=9.5),
+                font=dict(size=12),
                 orientation="h",
                 yanchor="bottom",
                 y=1.05,
@@ -139,17 +139,17 @@ if True:
                     hovertemplate='<b>%{x}</b><br>Profit: Rp %{y:,.0f}<extra></extra>'
                 ))
             fig_profit.update_layout(
-                xaxis=dict(title=dict(text="Month", font=dict(size=10)), tickfont=dict(size=9)),
-                yaxis=dict(title=dict(text="Profit (Rp)", font=dict(size=10)), tickfont=dict(size=9)),
+                xaxis=dict(title=dict(text="Month", font=dict(size=14)), tickfont=dict(size=12)),
+                yaxis=dict(title=dict(text="Profit (Rp)", font=dict(size=14)), tickfont=dict(size=14)),
                 hovermode='x unified',
                 template='plotly_white',
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
                 height=250,
                 margin=dict(l=34, r=10, t=34, b=10),
-                font=dict(size=10.5),
+                font=dict(size=12),
                 legend=dict(
-                    font=dict(size=9.5),
+                    font=dict(size=12),
                     orientation="h",
                     yanchor="bottom",
                     y=1.05,
@@ -188,13 +188,13 @@ if True:
                 title="",
                 height=220,
                 margin=dict(l=32, r=6, t=6, b=44),
-                xaxis=dict(title=dict(font=dict(size=10)), tickfont=dict(size=9), automargin=True),
-                yaxis=dict(title=dict(font=dict(size=10)), tickfont=dict(size=9), automargin=True),
+                xaxis=dict(title=dict(font=dict(size=14)), tickfont=dict(size=12), automargin=True),
+                yaxis=dict(title=dict(font=dict(size=14)), tickfont=dict(size=12), automargin=True),
                 coloraxis_colorbar=dict(
-                    title=dict(text="Avg Ticket (Rp)", font=dict(size=8)),
+                    title=dict(text="Avg Ticket (Rp)", font=dict(size=10)),
                     thickness=8,
-                    len=0.55,
-                    tickfont=dict(size=7),
+                    len=0.85,
+                    tickfont=dict(size=12),
                     x=1.0,
                     xpad=2,
                 ),
@@ -211,7 +211,7 @@ if True:
                 height=220,
                 margin=dict(l=32, r=8, t=40, b=30),
                 legend=dict(
-                    font=dict(size=9.5),
+                    font=dict(size=12),
                     orientation="h",
                     yanchor="bottom",
                     y=1.05,
@@ -231,7 +231,7 @@ if True:
                 height=220,
                 margin=dict(l=4, r=4, t=6, b=34),
                 legend=dict(
-                    font=dict(size=9.5),
+                    font=dict(size=12),
                     orientation="h",
                     yanchor="bottom",
                     y=-0.22,
@@ -244,8 +244,20 @@ if True:
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
     # ── BUSINESS HIGHLIGHTS: ringkasan statis, full width ──────────────────
+    # AFTER
     with st.container(border=True, key="sidepanel_insights"):
         st.markdown("#### Business Highlights")
+        st.markdown(
+            """
+            <div style="font-size:11px; color:var(--text-muted); margin:-18px 0 18px 0; line-height:1.6;">
+                A quick snapshot of revenue growth, branch profitability, and expansion
+                opportunities to help guide strategic business decisions.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         info_box(f'{svg("INSIGHT")} <b>Growth:</b> +73.7% (21 to 22), +49.2% (22 to 23)', kind="success")
         info_box(f'{svg("PIN")} <b>Branch Type:</b> Mall 35.2% margin, University -37.7%', kind="warning")
         info_box(f'{svg("BRANCH")} <b>Expansion:</b> Makassar & Denpasar top targets', kind="info")
+        
+        
