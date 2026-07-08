@@ -357,10 +357,6 @@ def city_bubble(city_df: pd.DataFrame, expansion_df: pd.DataFrame = None) -> go.
         return f"{vert} {horiz}"
 
     label_text = [row["branch_city"] for _, row in merged.iterrows()]
-    label_text = [
-        row["branch_city"] if row["expansion_score"] >= 0.65 else ""
-        for _, row in merged.iterrows()
-    ]
     label_positions = [
         _textposition(row["num_branches"], row["avg_profit_margin"])
         for _, row in merged.iterrows()
@@ -370,7 +366,7 @@ def city_bubble(city_df: pd.DataFrame, expansion_df: pd.DataFrame = None) -> go.
         mode="markers+text",
         text=label_text,
         textposition=label_positions,
-        textfont=dict(size=9.5, color=COLORS["text"]),
+        textfont=dict(size=11, color=COLORS["text"]),
     )
 
     fig.data[0].update(cliponaxis=False)
