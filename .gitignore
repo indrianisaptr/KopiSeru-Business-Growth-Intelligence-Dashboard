@@ -44,7 +44,6 @@ MANIFEST
 
 # Jupyter Notebook
 .ipynb_checkpoints
-*.ipynb
 
 # pytest
 .pytest_cache/
