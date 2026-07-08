@@ -65,7 +65,7 @@ def _chart_header(title: str, key: str, chart_title: str, chart_df, compact: boo
 
 def _hlegend_top(fig):
     fig.update_layout(legend=dict(
-        font=dict(size=13), orientation="h",
+        font=dict(size=9.5), orientation="h",
         yanchor="bottom", y=1.05, xanchor="center", x=0.5,
     ))
 

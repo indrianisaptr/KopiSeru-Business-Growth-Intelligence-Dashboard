@@ -389,6 +389,16 @@ def render_sidebar(df: pd.DataFrame) -> dict:
             unsafe_allow_html=True,
         )
 
+        st.markdown("<div style='height:3px;'></div>", unsafe_allow_html=True)
+
+        # ── Reset All Filters (di bawah Data Information) ──────────────────
+        if st.button("Reset All Filters", use_container_width=True, key="btn_reset_filters"):
+            old_rc = st.session_state["filter_reset_counter"]
+            for base in _filter_bases:
+                st.session_state.pop(f"{base}_{old_rc}", None)
+            st.session_state["filter_reset_counter"] = old_rc + 1
+            st.rerun()
+
     filters = {
         "years":        years_sel   or years_avail,
         "months":       months_sel  or months_avail,

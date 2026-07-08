@@ -357,6 +357,10 @@ def city_bubble(city_df: pd.DataFrame, expansion_df: pd.DataFrame = None) -> go.
         return f"{vert} {horiz}"
 
     label_text = [row["branch_city"] for _, row in merged.iterrows()]
+    label_text = [
+        row["branch_city"] if row["expansion_score"] >= 0.65 else ""
+        for _, row in merged.iterrows()
+    ]
     label_positions = [
         _textposition(row["num_branches"], row["avg_profit_margin"])
         for _, row in merged.iterrows()

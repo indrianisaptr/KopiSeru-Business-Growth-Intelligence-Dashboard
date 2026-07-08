@@ -98,7 +98,6 @@ def metric_card(
         f"""
         <div class="kpi-card">
             <span class="kpi-icon-watermark">{icon}</span>
-            <span class="kpi-icon-badge">{icon}</span>
             <div class="kpi-label">{label}</div>
             <div class="kpi-value">{value}</div>
             {delta_html}
@@ -278,7 +277,6 @@ def inject_compact_css() -> None:
             flex-direction: column !important;
             justify-content: flex-start !important;
         }
-        section.main .kpi-icon-badge, [data-testid="stMain"] .kpi-icon-badge { font-size: 15px !important; }
         section.main .kpi-label, [data-testid="stMain"] .kpi-label { font-size: 15px !important; margin-bottom: 4px !important; }
         section.main .kpi-value, [data-testid="stMain"] .kpi-value { font-size: 25px !important; line-height: 1.1 !important; }
         section.main .kpi-delta, [data-testid="stMain"] .kpi-delta { font-size: 15px !important; margin-top: 4px !important; }
@@ -867,68 +865,45 @@ def inject_compact_css() -> None:
         /* ── KPI card: Executive Summary (6 kartu, lebih tinggi) ─────────────── */
         section.main div[class*="st-key-kpicol_main"] .kpi-card,
         [data-testid="stMain"] div[class*="st-key-kpicol_main"] .kpi-card {
-            height: 180px !important;
-            min-height: 180px !important;
+            height: 225px !important;
+            min-height: 225px !important;
         }
 
         /* ── KPI card: Business Growth, Branch Performance, Customer Insight (4 kartu) ── */
         section.main div[class*="st-key-kpicol_std"] .kpi-card,
         [data-testid="stMain"] div[class*="st-key-kpicol_std"] .kpi-card {
-            height: 150px !important;
-            min-height: 150px !important;
+            height: 190px !important;
+            min-height: 190px !important;
         }
         .kpi-card {
             position: relative;
             overflow: hidden;
-            background: linear-gradient(180deg, #6F4E37 0%, #4A2A1D 100%);
+            background: linear-gradient(135deg, #6F4E37 0%, #4A2A1D 100%);
             border-radius: 16px;
             padding: 18px 18px 16px 18px;    
             z-index: 0;
+            box-shadow: 0 4px 14px rgba(64, 34, 24, 0.18);
+            transition: transform 200ms ease, box-shadow 200ms ease;
+        }
+        .kpi-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(64, 34, 24, 0.28);
         }
         .kpi-card > * {
             position: relative;   /* ← bikin semua child langsung punya stacking context sendiri */
             z-index: 1;           /* ← naikkan di atas watermark */
         }
 
-        .kpi-icon-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: #F7EFE6;              /* sama dengan warna dasar .kpi-card */
-            border: 1.5px solid #E4CBA8;      /* outline */
-            color: #6f4e37;
-            font-size: 16px;
-            margin-bottom: 10px;
-            box-shadow: none;
-        }
-        .kpi-icon-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            align-self: flex-start;   /* ← cegah ikut stretch mengikuti lebar card */
-            flex: 0 0 auto;           /* ← kunci ukuran, tidak ikut grow/shrink flex */
-            width: 40px;
-            height: 40px;
-            min-width: 40px;          /* jaga-jaga tambahan agar tidak menyusut */
-            min-height: 40px;
-            border-radius: 50%;
-            background: #F7EFE6;
-            border: 1.5px solid #E4CBA8;
-            color: #6f4e37;
-            font-size: 16px;
-            margin-bottom: 10px;
-            box-shadow: none;
-        }
         .kpi-icon-watermark {
             position: absolute;
-            top: 0px;
-            right: 10px;
-            font-size: 46px;
-            color: #D4A853;
-            opacity: 0.16;
+            bottom: 6px;
+            left: 50%;
+            right: auto;
+            top: auto;
+            transform: translateX(-50%);
+            font-size: 65px;
+            color: #FFFFFF;
+            opacity: 0.35;
             pointer-events: none;
             z-index: 0;
         }
@@ -948,7 +923,8 @@ def inject_compact_css() -> None:
         .kpi-value {
             font-size: 20px;
             font-weight: 800;
-            color: #F1EEEA;
+            color: #FFEDAC;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
             line-height: 1.1;
         }
 
