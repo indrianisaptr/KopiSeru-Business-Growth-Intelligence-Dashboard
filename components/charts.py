@@ -9,6 +9,7 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 from utils.data_loader import COLORS, MONTH_ORDER, BRANCH_TYPE_ORDER
+from .cards import fmt_currency
 
 #  Shared layout defaults 
 def _base_layout(**kwargs) -> dict:
@@ -215,16 +216,17 @@ def weekday_bar(ww_df: pd.DataFrame, metric: str = "avg_revenue",
     fig.update_layout(
         title=title,
         yaxis=_axis_style(),
+        hovermode="x",
         **_base_layout(height=300),
     )
     return fig
 
 
 # 5. City & Branch Performance 
-
 def city_profit_bar(city_df: pd.DataFrame) -> go.Figure:
     """Total profit per city horizontal bar."""
     d = city_df.sort_values("total_profit", ascending=True)
+    _max = max(list(d["total_profit"]) or [0])
     fig = go.Figure(go.Bar(
         x=d["total_profit"], y=d["branch_city"],
         orientation="h",
@@ -234,7 +236,7 @@ def city_profit_bar(city_df: pd.DataFrame) -> go.Figure:
         customdata=d["num_branches"],
         hovertemplate=(
             "<b>%{y}</b><br>"
-            "Total Profit: Rp %{x:,.0f}<br>"
+            "Total Profit: Rp%{x:,.0f}<br>"
             "Branches: %{customdata}<extra></extra>"
         ),
     ))
@@ -244,6 +246,7 @@ def city_profit_bar(city_df: pd.DataFrame) -> go.Figure:
         yaxis=dict(title="", tickfont=dict(size=13)),
         **_base_layout(height=400),
     )
+    fig.update_xaxes(range=[0, _max * 1.22])
     return fig
 
 def branch_type_margin_bar(bt_df: pd.DataFrame) -> go.Figure:
@@ -650,14 +653,38 @@ def satisfaction_weather_box(df: pd.DataFrame) -> go.Figure:
     colors = [COLORS["primary"], COLORS["secondary"], COLORS["accent"], COLORS["warning"]]
     for i, weather in enumerate(df["weather"].unique()):
         d = df[df["weather"] == weather]["customer_satisfaction"]
+        q1, median, q3 = d.quantile([0.25, 0.5, 0.75])
+        iqr = q3 - q1
+        upper_fence = min(d.max(), q3 + 1.5 * iqr)
+        lower_fence = max(d.min(), q1 - 1.5 * iqr)
+        mean, std = d.mean(), d.std()
+
+        # A single combined hoverlabel (instead of Plotly's default
+        # per-statistic callouts) so the hover box behaves like a normal
+        # tooltip and doesn't get anchored off-screen to the right for
+        # the last category.
+        hover_text = (
+            f"<b>{weather}</b><br>"
+            f"Max: {d.max():.1f}<br>"
+            f"Upper fence: {upper_fence:.1f}<br>"
+            f"Q3: {q3:.1f}<br>"
+            f"Median: {median:.1f}<br>"
+            f"Mean ± σ: {mean:.2f} ± {std:.2f}<br>"
+            f"Q1: {q1:.1f}<br>"
+            f"Lower fence: {lower_fence:.1f}<br>"
+            f"Min: {d.min():.1f}"
+        )
         fig.add_trace(go.Box(
             y=d, name=weather,
             marker_color=colors[i % len(colors)],
             boxmean="sd",
+            hovertemplate=hover_text + "<extra></extra>",
         ))
     fig.update_layout(
         title="Customer Satisfaction per Weather",
         yaxis=_axis_style("Satisfaction Score"),
+        hovermode="closest",
+        hoverlabel=dict(align="left"),
         **_base_layout(height=340),
     )
     return fig

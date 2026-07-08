@@ -40,18 +40,28 @@ def _render_html(html: str) -> None:
     st.markdown(flat, unsafe_allow_html=True)
 
 
-def fmt_currency(val: float, short: bool = True) -> str:
-    """Format a Rupiah value."""
+def fmt_currency(val: float, short: bool = True, decimals: int = 1) -> str:
+    """Format a Rupiah value.
+
+    Single source of truth for currency formatting across the dashboard.
+
+    Args:
+        val: the raw Rupiah value.
+        short: if True, abbreviate using K/M/B units.
+        decimals: number of decimal places used for the abbreviated
+            K/M/B forms (e.g. decimals=1 for KPI cards, decimals=2 for
+            chart labels that need finer precision).
+    """
     if val is None:
         return "—"
     if short:
         if abs(val) >= 1_000_000_000:
-            return f"Rp {val/1_000_000_000:.1f} B"
+            return f"Rp{val/1_000_000_000:.{decimals}f} B"
         if abs(val) >= 1_000_000:
-            return f"Rp {val/1_000_000:.1f} M"
+            return f"Rp{val/1_000_000:.{decimals}f} M"
         if abs(val) >= 1_000:
-            return f"Rp {val/1_000:.0f} K"
-    return f"Rp {val:,.0f}"
+            return f"Rp{val/1_000:.{decimals}f} K"
+    return f"Rp{val:,.0f}"
 
 
 def fmt_number(val: float, suffix: str = "") -> str:
