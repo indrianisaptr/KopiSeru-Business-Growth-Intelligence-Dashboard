@@ -143,7 +143,7 @@ if True:
                 template='plotly_white',
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0)",
-                height=250,
+                height=260,
                 margin=dict(l=34, r=10, t=34, b=10),
                 font=dict(size=12),
                 legend=dict(
@@ -164,7 +164,7 @@ if True:
             fig_bt = branch_type_margin_bar(bt_df)
             fig_bt.update_layout(
                 title="",
-                height=250,
+                height=260,
                 margin=dict(l=34, r=10, t=6, b=36),
                 xaxis=dict(automargin=True),
                 yaxis=dict(automargin=True),
@@ -173,41 +173,22 @@ if True:
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-    # SUPPORTING: Revenue vs Transaction | Promotion Impact | Channel Distribution
-    r2c1, r2c2, r2c3 = st.columns(3, gap="small")
+    # SUPPORTING: Promotion Impact | Channel Distribution
+    r2c1, r2c2 = st.columns(2, gap="small")
     with r2c1:
-        with st.container(border=True, key="chartbox_txn_revenue"):
-            _chart_header("Revenue vs Transaction", "txn_revenue_corr",
-                          "Revenue vs Transaction Correlation",
-                          df[["total_transactions", "total_revenue"]], compact=True)
-            from components import txn_vs_revenue_scatter
-            fig_corr = txn_vs_revenue_scatter(df)
-            fig_corr.update_layout(
-                title="",
-                height=220,
-                margin=dict(l=32, r=6, t=6, b=44),
-                xaxis=dict(title=dict(font=dict(size=14)), tickfont=dict(size=12), automargin=True),
-                yaxis=dict(title=dict(font=dict(size=14)), tickfont=dict(size=12), automargin=True),
-                coloraxis_colorbar=dict(
-                    title=dict(text="Avg Ticket (Rp)", font=dict(size=10)),
-                    thickness=8,
-                    len=0.85,
-                    tickfont=dict(size=12),
-                    x=1.0,
-                    xpad=2,
-                ),
-            )
-            st.plotly_chart(fig_corr, use_container_width=True, config={"displayModeBar": False})
-
-    with r2c2:
         with st.container(border=True, key="chartbox_promo_impact"):
             _chart_header("Promotion Impact", "promo_impact", "Promotion Impact on Revenue",
                           df[["promo_label", "total_revenue"]], compact=True)
             fig_promo = promo_boxplot(df)
+            fig_promo.update_traces(width=0.28)
             fig_promo.update_layout(
                 title="",
                 height=220,
-                margin=dict(l=32, r=8, t=40, b=30),
+                margin=dict(l=34, r=10, t=40, b=30),
+                boxgap=0.6,
+                boxgroupgap=0.4,
+                xaxis=dict(range=[-1.1, 2.1]),
+                yaxis=dict(range=[0, 18_000_000]),
                 legend=dict(
                     font=dict(size=12),
                     orientation="h",
@@ -219,7 +200,7 @@ if True:
             )
             st.plotly_chart(fig_promo, use_container_width=True, config={"displayModeBar": False})
 
-    with r2c3:
+    with r2c2:
         with st.container(border=True, key="chartbox_channel_dist"):
             _chart_header("Channel Distribution", "channel_dist", "Channel Distribution", ch_df, compact=True)
             fig_ch = channel_pie(ch_df)
@@ -238,6 +219,32 @@ if True:
                 ),
             )
             st.plotly_chart(fig_ch, use_container_width=True, config={"displayModeBar": False})
+
+    st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
+
+    # SUPPORTING: Revenue vs Transaction (full width)
+    with st.container(border=True, key="chartbox_txn_revenue"):
+        _chart_header("Revenue vs Transaction", "txn_revenue_corr",
+                      "Revenue vs Transaction Correlation",
+                      df[["total_transactions", "total_revenue"]])
+        from components import txn_vs_revenue_scatter
+        fig_corr = txn_vs_revenue_scatter(df)
+        fig_corr.update_layout(
+            title="",
+            height=300,
+            margin=dict(l=34, r=10, t=34, b=10),
+            xaxis=dict(title=dict(font=dict(size=14)), tickfont=dict(size=12), automargin=True),
+            yaxis=dict(title=dict(font=dict(size=14)), tickfont=dict(size=12), automargin=True),
+            coloraxis_colorbar=dict(
+                title=dict(text="Avg Ticket (Rp)", font=dict(size=10)),
+                thickness=8,
+                len=0.85,
+                tickfont=dict(size=12),
+                x=1.0,
+                xpad=2,
+            ),
+        )
+        st.plotly_chart(fig_corr, use_container_width=True, config={"displayModeBar": False})
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
