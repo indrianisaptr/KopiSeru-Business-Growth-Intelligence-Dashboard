@@ -69,7 +69,7 @@ with st.container(key="kpicol_std"):
     with kpi_cols[0]:
         metric_card("Avg Satisfaction", f"{avg_sat:.2f} / 5.0", icon=svg("SMILE"))
     with kpi_cols[1]:
-        metric_card("Mode Score", f"{mode_sat:.1f} / 5.0", icon=svg("TARGET"))
+        metric_card("Mode Satisfaction", f"{mode_sat:.1f} / 5.0", icon=svg("TARGET"))
     with kpi_cols[2]:
         metric_card("High Satisfaction", f"{pct_high:.1f}%", icon=svg("THUMBUP"))
     with kpi_cols[3]:

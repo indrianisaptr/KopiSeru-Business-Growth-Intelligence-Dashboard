@@ -93,7 +93,7 @@ with st.container(border=True, key="chartbox_city_profitability"):
     st.markdown("#### Profitability by City")
     info_box(
         f"<b>Top Profit City:</b> {top_city['branch_city']} • "
-        f"Total: Rp {top_city['total_profit']:,.0f}<br>"
+        f"Total: Rp{top_city['total_profit']:,.0f}<br>"
         f"<b>Best Margin City:</b> {top_margin['branch_city']} • "
         f"Margin: {top_margin['avg_profit_margin']:.1f}%",
         kind="success"
@@ -121,7 +121,7 @@ with row1_c2:
         _chart_header("Average Revenue by Promotion Type", "promo_avg_revenue",
                       "Average Revenue by Promotion Type", promo_df, compact=True,
                       extra_text="All promotion types generate similar revenue "
-                                 "(~Rp 4.7-4.9 JT). Presence of promo matters more "
+                                 "(~Rp4.7-4.9 M). Presence of promo matters more "
                                  "than the type.",
                       extra_kind="info")
         fig_promo = promo_avg_revenue(df)
@@ -145,7 +145,7 @@ with row1_c3:
                          promo_summary.loc['Non-Promo', 'total_revenue']) - 1) * 100
         _chart_header("Promo vs Non-Promo", "promo_vs_nonpromo",
                       "Promo vs Non-Promo Revenue", promo_summary.reset_index(), compact=True,
-                      extra_text=f"Promo boost: {_promo_boost:.1f}%Effective for volume, but margin impact needs evaluation.",
+                      extra_text=f"Promo boost: {_promo_boost:.1f}%<br>Effective for volume, but margin impact needs evaluation.",
                       extra_kind="info")
         fig_comp = go.Figure(data=[
             go.Bar(name='Avg Revenue',
@@ -165,6 +165,7 @@ with row1_c3:
                 tickfont=dict(size=14),                     
             ),
             showlegend=False,
+            yaxis_title="Avg Revenue (Rp)",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0)",
             height=300,
@@ -193,6 +194,7 @@ with row2_c1:
         fig_rev = weekday_bar(wd_df.copy())
         fig_rev.update_layout(
             title="",
+            yaxis_title="Avg Revenue (Rp)",
             height=238.5,
             margin=dict(l=34, r=30, t=10, b=40),
         )
@@ -222,7 +224,6 @@ with row2_c2:
             ))
             fig_txn.update_layout(
                 title="",
-                xaxis_title="Day Type",
                 yaxis_title="Avg Transactions",
                 showlegend=False,
                 paper_bgcolor="rgba(0,0,0,0)",
@@ -253,13 +254,12 @@ with row2_c3:
                 x=wd_df['day_type'],
                 y=wd_df['avg_profit'],
                 marker_color=['#5C3D1E', '#D4A853'],
-                text=wd_df['avg_profit'].apply(lambda x: f'Rp {x/1e6:.1f}JT'),
+                text=wd_df['avg_profit'].apply(lambda x: f'Rp{x/1e6:.1f}M'),
                 textposition='auto',
-                hovertemplate='<b>%{x}</b><br>Profit: Rp %{y:,.0f}<extra></extra>'
+                hovertemplate='<b>%{x}</b><br>Profit: Rp%{y:,.0f}<extra></extra>'
             ))
             fig_profit.update_layout(
                 title="",
-                xaxis_title="Day Type",
                 yaxis_title="Avg Profit (Rp)",
                 showlegend=False,
                 paper_bgcolor="rgba(0,0,0,0)",
@@ -316,7 +316,7 @@ with st.container(border=True, key="sidepanel_insights"):
     )
     info_box(
         f"<b>Top Profit City:</b> {top_city['branch_city']} • "
-        f"Total: Rp {top_city['total_profit']:,.0f}<br>"
+        f"Total: Rp{top_city['total_profit']:,.0f}<br>"
         f"<b>Best Margin City:</b> {top_margin['branch_city']} • "
         f"Margin: {top_margin['avg_profit_margin']:.1f}%",
         kind="success"
