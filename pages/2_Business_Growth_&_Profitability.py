@@ -100,8 +100,6 @@ with st.container(border=True, key="chartbox_city_profitability"):
     )
 
     fig_city = city_profit_bar(city_df)
-    _city_max = max(list(fig_city.data[0].x) or [0])
-    fig_city.update_xaxes(range=[0, _city_max * 1.22])
     fig_city.update_layout(
         title="",
         height=300,

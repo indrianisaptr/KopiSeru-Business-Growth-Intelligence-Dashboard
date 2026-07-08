@@ -112,9 +112,12 @@ if True:
             _chart_header("Expansion Score Rankings", "expansion_score",
                           "Expansion Score Rankings", expansion_df, compact=True)
             fig = expansion_bar(expansion_df)
+            _exp_max = max(list(fig.data[0].x) or [0])
+            fig.update_xaxes(range=[0, _exp_max * 1.15])
+            fig.update_traces(textposition="outside", cliponaxis=False)
             fig.update_layout(title="", height=260,
-                              margin=dict(l=8, r=36, t=20, b=32),
-                              xaxis=dict(automargin=True), yaxis=dict(automargin=True))
+                            margin=dict(l=8, r=50, t=20, b=32),
+                            xaxis=dict(automargin=True), yaxis=dict(automargin=True))
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
