@@ -15,11 +15,11 @@
 
 **Interactive Dashboard**
 
-> Coming Soon (Streamlit Community Cloud)
+*Built and maintained as a Data Analytics portfolio project*, showcasing end-to-end BI dashboard design: data preprocessing, KPI architecture, interactive visualization, and production-grade Streamlit UI engineering.
 
 **Demo URL**
 
-https://your-streamlit-url.streamlit.app
+https://kopiseru-dashboard.streamlit.app/
 
 ---
 
