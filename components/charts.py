@@ -10,8 +10,7 @@ import pandas as pd
 import numpy as np
 from utils.data_loader import COLORS, MONTH_ORDER, BRANCH_TYPE_ORDER
 
-# ── Shared layout defaults ────────────────────────────────────────────────────
-
+#  Shared layout defaults 
 def _base_layout(**kwargs) -> dict:
     base = dict(
         paper_bgcolor="rgba(0,0,0,0)",
@@ -45,7 +44,7 @@ def _axis_style(title: str = "", gridcolor: str = "#EEE") -> dict:
     )
 
 
-# ── 1. Revenue Trend Line ────────────────────────────────────────────────────
+# 1. Revenue Trend Line 
 
 def revenue_trend(monthly_df: pd.DataFrame) -> go.Figure:
     """Monthly revenue trend split by year."""
@@ -93,7 +92,7 @@ def revenue_yoy_bar(yoy: dict) -> go.Figure:
     return fig
 
 
-# ── 2. Promo Charts ──────────────────────────────────────────────────────────
+# 2. Promo Charts 
 
 def promo_boxplot(df: pd.DataFrame) -> go.Figure:
     """Revenue distribution: Promo vs Non-Promo box plot."""
@@ -139,7 +138,7 @@ def promo_avg_revenue(df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-# ── 3. Transactions vs Revenue ───────────────────────────────────────────────
+# 3. Transactions vs Revenue
 
 def txn_vs_revenue_scatter(df: pd.DataFrame) -> go.Figure:
     """Scatter: transactions vs revenue, coloured by avg_ticket_size."""
@@ -190,7 +189,7 @@ def correlation_heatmap(corr: pd.DataFrame) -> go.Figure:
     return fig
 
 
-# ── 4. Weekday vs Weekend ────────────────────────────────────────────────────
+# 4. Weekday vs Weekend 
 
 def weekday_bar(ww_df: pd.DataFrame, metric: str = "avg_revenue",
                 title: str = "Weekday vs Weekend", fmt: str = "currency") -> go.Figure:
@@ -221,7 +220,7 @@ def weekday_bar(ww_df: pd.DataFrame, metric: str = "avg_revenue",
     return fig
 
 
-# ── 5. City & Branch Performance ────────────────────────────────────────────
+# 5. City & Branch Performance 
 
 def city_profit_bar(city_df: pd.DataFrame) -> go.Figure:
     """Total profit per city horizontal bar."""
@@ -299,7 +298,7 @@ def city_bubble(city_df: pd.DataFrame, expansion_df: pd.DataFrame = None) -> go.
     rev = merged["revenue_per_branch"]
     rev_max = rev.max()
     sizeref = 2.0 * rev_max / (DESIRED_MAX_DIAMETER ** 2)
-    sizes = rev  # raw values; Plotly scales area from these directly
+    sizes = rev  
 
     fig.add_trace(go.Scatter(
         x=merged["num_branches"],
@@ -340,14 +339,6 @@ def city_bubble(city_df: pd.DataFrame, expansion_df: pd.DataFrame = None) -> go.
         showlegend=False,
     ))
 
-    # Text labels are rendered as part of the marker trace using textposition,
-    # not fig.add_annotation + yshift. textposition is chosen per point based on
-    # which quadrant the bubble sits in (relative to the data's median x/y), so
-    # labels naturally point outward/away from the cluster center instead of
-    # always sitting directly above the bubble — this stays robust even if the
-    # underlying data shifts and bubbles end up closer together.
-    # Only cities with expansion_score >= 0.65 are labeled to reduce clutter;
-    # all cities remain fully available via hover tooltip regardless.
     x_med = merged["num_branches"].median()
     y_med = merged["avg_profit_margin"].median()
 
@@ -387,7 +378,7 @@ def city_bubble(city_df: pd.DataFrame, expansion_df: pd.DataFrame = None) -> go.
     return fig
 
 
-# ── 6. Expansion ────────────────────────────────────────────────────────────
+#  6. Expansion 
 
 def expansion_bar(exp_df: pd.DataFrame) -> go.Figure:
     """Horizontal bar for expansion score per city."""
@@ -412,7 +403,7 @@ def expansion_bar(exp_df: pd.DataFrame) -> go.Figure:
     return fig
 
 
-# ── 7. Channel Charts ────────────────────────────────────────────────────────
+#  7. Channel Charts 
 
 def channel_pie(ch_df: pd.DataFrame) -> go.Figure:
     """Pie chart of overall channel distribution."""
@@ -505,7 +496,7 @@ def delivery_share_city(city_df: pd.DataFrame, full_df: pd.DataFrame) -> go.Figu
     return fig
 
 
-# ── 8. Customer Satisfaction ─────────────────────────────────────────────────
+#  8. Customer Satisfaction 
 
 def satisfaction_histogram(df: pd.DataFrame) -> go.Figure:
     """Distribution histogram of customer satisfaction scores."""

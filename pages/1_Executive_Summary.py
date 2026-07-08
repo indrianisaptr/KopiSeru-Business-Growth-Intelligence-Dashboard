@@ -1,8 +1,6 @@
 """
-pages/1_📊_Executive_Summary.py
+pages/1_Executive_Summary.py
 Executive Summary - Business Health Overview
-Layout: kolom KPI sempit di kiri, grid chart di kanan.
-Tombol "Explain" dipindah ke pojok kanan atas tiap chart (sejajar judul).
 """
 
 import streamlit as st
@@ -28,7 +26,7 @@ st.set_page_config(
 
 inject_compact_css()
 
-# ── Load & Filter data ────────────────────────────────────────────────────
+# Load & Filter data
 with st.spinner("Loading KopiSeru data..."):
     raw_df = load_data()
 
@@ -41,10 +39,10 @@ if df.empty:
 
 stats = build_summary_stats(df)
 
-# ── Header ────────────────────────────────────────────────────────────────
+# Header
 section_header("Executive Summary", "KopiSeru Business Health Overview · 2021–2023")
 
-# ── YoY calc ─────────────────────────────────────────────────────────────
+# YoY calc
 _yearly = df.groupby("year").agg(
     rev=("total_revenue", "sum"),
     pft=("profit", "sum"),
@@ -70,7 +68,7 @@ def _chart_header(title: str, key: str, chart_title: str, chart_df, compact: boo
     """Judul chart."""
     st.markdown(f"#### {title}")
 
-# ── KPI: baris horizontal di atas (bukan kolom sempit di kiri) ────────────
+# KPI
 with st.container(key="kpicol_main"):
     kpi_cols = st.columns(6, gap="small")
     with kpi_cols[0]:
@@ -92,7 +90,7 @@ with st.container(key="kpicol_main"):
 st.markdown("<div style='margin-top:0.6rem;'></div>", unsafe_allow_html=True)
 
 if True:
-    # ── HERO: Revenue Trend (full width, chart utama halaman) ─────────────
+    # HERO: Revenue Trend
     with st.container(border=True, key="chartbox_revenue_trend"):
         _chart_header("Revenue Trend", "revenue_trend", "Monthly Revenue Trend", monthly_df)
         fig = revenue_trend(monthly_df)
@@ -113,7 +111,7 @@ if True:
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-    # ── SECONDARY: Profit Trend | Margin by Branch Type ────────────────────
+    # SECONDARY: Profit Trend | Margin by Branch Type
     r1c1, r1c2 = st.columns(2, gap="small")
     with r1c1:
         with st.container(border=True, key="chartbox_profit_trend"):
@@ -175,7 +173,7 @@ if True:
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-    # ── SUPPORTING: Revenue vs Transaction | Promotion Impact | Channel Distribution ──
+    # SUPPORTING: Revenue vs Transaction | Promotion Impact | Channel Distribution
     r2c1, r2c2, r2c3 = st.columns(3, gap="small")
     with r2c1:
         with st.container(border=True, key="chartbox_txn_revenue"):
@@ -243,8 +241,7 @@ if True:
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-    # ── BUSINESS HIGHLIGHTS: ringkasan statis, full width ──────────────────
-    # AFTER
+    # BUSINESS HIGHLIGHTS: ringkasan statis, full width
     with st.container(border=True, key="sidepanel_insights"):
         st.markdown("#### Business Highlights")
         st.markdown(

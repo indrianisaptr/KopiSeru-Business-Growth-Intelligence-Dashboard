@@ -1,9 +1,6 @@
 """
-pages/3_🏪_Branch_Performance_&_Expansion.py
+pages/3_Branch_Performance_&_Expansion.py
 Branch Performance & Expansion Strategy
-Layout: kolom KPI sempit di kiri, grid chart di kanan.
-Tombol "Explain" dipindah ke pojok kanan atas tiap chart (sejajar judul).
-Mengikuti pola 1_Executive_Summary.py.
 """
 
 import streamlit as st

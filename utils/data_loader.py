@@ -25,7 +25,7 @@ CITY_ORDER = [
 
 BRANCH_TYPE_ORDER = ["Mall", "Office Area", "Stand Alone", "University"]
 
-# ── KopiSeru brand palette ───────────────────────────────────────────────────
+# KopiSeru brand palette
 COLORS = {
     "primary":       "#5C3D1E",   # deep coffee brown
     "secondary":     "#8B5E3C",   # medium brown
@@ -46,14 +46,14 @@ COLORS = {
         "#4CAF82", "#E05252", "#6B8DD6",
         "#E8A838", "#A3C4BC",
     ],
-    # branch type colours
+    # branch type colors
     "branch": {
         "Mall":        "#5C3D1E",
         "Office Area": "#8B5E3C",
         "Stand Alone": "#D4A853",
         "University":  "#E05252",
     },
-    # channel colours
+    # channel colors
     "channel": {
         "Takeaway": "#D4A853",
         "Delivery": "#8B5E3C",
@@ -82,11 +82,11 @@ def _preprocess(df: pd.DataFrame) -> pd.DataFrame:
     df["promo_label"]   = df["promo_active"].map({True: "Promo", False: "Non-Promo"})
     df["year_month"]    = df["date"].dt.to_period("M").astype(str)
 
-    # normalise percentage columns (already 0-100 in source)
+    # normalise percentage columns
     for col in ["dine_in_percent", "delivery_percent", "takeaway_percent"]:
         df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
-    # profit margin guard (avoid inf)
+    # profit margin guard
     df["profit_margin"] = df["profit_margin"].replace([np.inf, -np.inf], np.nan)
 
     return df
@@ -109,7 +109,7 @@ def apply_filters(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
     if filters.get("weathers"):
         fdf = fdf[fdf["weather"].isin(filters["weathers"])]
     if filters.get("channels"):
-        # channel filter works by keeping rows where the named channel columns > 0
+        # channel filter
         channel_map = {
             "Takeaway": "takeaway_percent",
             "Delivery": "delivery_percent",
@@ -127,7 +127,7 @@ def apply_filters(df: pd.DataFrame, filters: dict) -> pd.DataFrame:
     return fdf
 
 
-# ── Aggregation helpers ───────────────────────────────────────────────────────
+# Aggregation helpers
 
 def monthly_revenue(df: pd.DataFrame) -> pd.DataFrame:
     """Monthly total revenue aggregated across all filtered branches."""

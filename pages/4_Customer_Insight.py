@@ -1,9 +1,6 @@
 """
-pages/4_😊_Customer_Insight.py
+pages/4_Customer_Insight.py
 Customer Insight - Customer satisfaction and behavior analysis
-Layout: kolom KPI sempit di kiri, grid chart di kanan.
-Tombol "Explain" dipindah ke pojok kanan atas tiap chart (sejajar judul).
-Mengikuti pola 1_Executive_Summary.py.
 """
 
 import streamlit as st
@@ -30,7 +27,7 @@ st.set_page_config(
 
 inject_compact_css()
 
-# ── Load & Filter data ────────────────────────────────────────────────────
+# Load & Filter data
 with st.spinner("Loading KopiSeru data..."):
     raw_df = load_data()
 
@@ -43,18 +40,18 @@ if df.empty:
 
 stats = build_summary_stats(df)
 
-# ── Header ────────────────────────────────────────────────────────────────
+# Header
 section_header("Customer Insight",
                "Customer behavior, channel preferences, and satisfaction drivers")
 
-# ── KPI calc ──────────────────────────────────────────────────────────────
+# KPI calc
 sat_dist = df["customer_satisfaction"].value_counts().sort_index()
 mode_sat = sat_dist.idxmax()
 pct_high = len(df[df["customer_satisfaction"] >= 4.0]) / len(df) * 100
 pct_low  = len(df[df["customer_satisfaction"] < 3.0]) / len(df) * 100
 avg_sat  = stats["avg_satisfaction"]
 
-# ── Aggregates (dipakai chart + panel insight) ────────────────────────────
+# Aggregates
 sat_by_type  = satisfaction_by_factor(df, "branch_type")
 sat_by_promo = satisfaction_by_factor(df, "promo_type")
 best_type    = sat_by_type.iloc[0]
@@ -66,7 +63,7 @@ def _chart_header(title: str, key: str, chart_title: str, chart_df, compact: boo
     st.markdown(f"#### {title}")
 
 
-# ── KPI: baris horizontal di atas ─────────────────────────────────────────
+# KPI
 with st.container(key="kpicol_std"):
     kpi_cols = st.columns(4, gap="small")
     with kpi_cols[0]:
@@ -81,7 +78,7 @@ with st.container(key="kpicol_std"):
 st.markdown("<div style='margin-top:0.6rem;'></div>", unsafe_allow_html=True)
 
 if True:
-    # ── ROW 1: Satisfaction Distribution (full width, 1 chart) ─────────────
+    # ROW 1: Satisfaction Distribution 
     with st.container(border=True, key="chartbox_sat_hist"):
         _chart_header("Satisfaction Distribution", "satisfaction_hist",
                       "Customer Satisfaction Distribution",
@@ -93,7 +90,7 @@ if True:
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-    # ── ROW 2: Branch Type box | Promo bar | Weather box (3 charts) ────────
+    # ROW 2: Branch Type box | Promo bar | Weather box
     r2c1, r2c2, r2c3 = st.columns(3, gap="small")
     with r2c1:
         with st.container(border=True, key="chartbox_sat_branch"):
@@ -139,7 +136,7 @@ if True:
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-    # ── ROW 3: Monthly Avg Customer Satisfaction Trend (full width) ────────
+    # ROW 3: Monthly Avg Customer Satisfaction Trend
     with st.container(border=True, key="chartbox_sat_trend"):
         _chart_header("Monthly Average Customer Satisfaction Trend",
                       "satisfaction_trend",
@@ -151,7 +148,7 @@ if True:
 
     st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-    # ── BUSINESS HIGHLIGHTS: ringkasan statis, full width ──────────────────
+    # Business Highlights
     with st.container(border=True, key="sidepanel_insights"):
         st.markdown("#### Business Highlights")
         st.markdown(

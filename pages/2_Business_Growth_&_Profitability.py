@@ -1,12 +1,6 @@
 """
 pages/2_📈_Business_Growth_&_Profitability.py
 Business Growth & Profitability Analysis
-Layout mengikuti wireframe:
-  Row 1 (3 kolom): Key Metrics (2x2) | Avg Revenue by Promo Type | Promo vs Non-Promo
-  Row 2 (3 kolom, kiri lebih lebar): Weekday Revenue | Transactions | Profit
-  Row 3 (2 kolom): Profitability by City (besar) | Business Development Copilot
-Semua data, KPI calculation, dan chart logic TIDAK diubah
-hanya dibungkus ulang ke dalam card layout ala Executive Summary.
 """
 
 import streamlit as st
@@ -30,7 +24,7 @@ st.set_page_config(
 
 inject_compact_css()
 
-# ── Load & Filter data ────────────────────────────────────────────────────
+# Load & Filter data
 with st.spinner("Loading KopiSeru data..."):
     raw_df = load_data()
 
@@ -43,14 +37,14 @@ if df.empty:
 
 stats = build_summary_stats(df)
 
-# ── Page Content ──────────────────────────────────────────────────────────
+# Page Content
 
 section_header(
     "Business Growth & Profitability Analysis",
     "Deep dive into growth drivers and profitability factors"
 )
 
-# ── Data yang dipakai di beberapa baris (logic tidak berubah) ─────────────
+# Repeated calculations for charts
 wd_df = weekday_weekend(df)
 promo_df = promo_revenue(df)
 city_df = city_performance(df)
@@ -72,11 +66,10 @@ def _chart_header(title: str, key: str, chart_title: str, chart_df, compact: boo
     if extra_text:
         info_box(extra_text, kind=extra_kind)
 
-# ═══════════════════════════════════════════════════════════════════════
-# ROW 1 Key Metrics (2x2) | Avg Revenue by Promo Type | Promo vs Non-Promo
-# ═══════════════════════════════════════════════════════════════════════
 
-# ── KPI: baris horizontal di atas ─────────────────────────────────────────
+# ROW 1 Key Metrics (2x2) | Avg Revenue by Promo Type | Promo vs Non-Promo
+
+# KPI
 with st.container(key="kpicol_std"):
     kpi_cols = st.columns(4, gap="small")
     with kpi_cols[0]:
@@ -90,9 +83,9 @@ with st.container(key="kpicol_std"):
 
 st.markdown("<div style='height:26px;'></div>", unsafe_allow_html=True)
 
-# ═══════════════════════════════════════════════════════════════════════
-# HERO Profitability by City (chart utama, full width, dipindah ke atas)
-# ═══════════════════════════════════════════════════════════════════════
+
+# Profitability by City 
+
 with st.container(border=True, key="chartbox_city_profitability"):
     top_city = city_df.nlargest(1, 'total_profit').iloc[0]
     top_margin = city_df.nlargest(1, 'avg_profit_margin').iloc[0]
@@ -118,9 +111,8 @@ with st.container(border=True, key="chartbox_city_profitability"):
 
 st.markdown("<div style='margin-top:0.6rem;'></div>", unsafe_allow_html=True)
 
-# ═══════════════════════════════════════════════════════════════════════
+
 # SECONDARY Avg Revenue by Promo Type | Promo vs Non-Promo
-# ═══════════════════════════════════════════════════════════════════════
 
 row1_c2, row1_c3 = st.columns(2, gap="small")
 
@@ -182,9 +174,8 @@ with row1_c3:
 
 st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
 
-# ═══════════════════════════════════════════════════════════════════════
-# ROW 2 Weekday vs Weekend: Revenue (lebih lebar) | Transactions | Profit
-# ═══════════════════════════════════════════════════════════════════════
+
+# ROW 2 Weekday vs Weekend: Revenue | Transactions | Profit
 
 row2_c1, row2_c2, row2_c3 = st.columns([1, 1, 1], gap="small")
 
@@ -278,7 +269,7 @@ with row2_c3:
             )
             st.plotly_chart(fig_profit, use_container_width=True, config={"displayModeBar": False})
 
-# ── Critical Finding (tetap dipertahankan persis) ─────────────────────────
+# Critical Finding
 st.markdown("<div style='margin-top:1.5rem;'></div>", unsafe_allow_html=True)
 
 with st.expander("Weekend Profit Drop: Further Analysis & Recommended Actions", expanded=False):
@@ -306,9 +297,8 @@ with st.expander("Weekend Profit Drop: Further Analysis & Recommended Actions", 
 
 st.markdown("<div style='margin-top:1.4rem;'></div>", unsafe_allow_html=True)
 
-# ═══════════════════════════════════════════════════════════════════════
-# BUSINESS HIGHLIGHTS ringkasan statis memakai angka yang sudah dihitung
-# ═══════════════════════════════════════════════════════════════════════
+
+# BUSINESS HIGHLIGHTS 
 
 top_city = city_df.nlargest(1, 'total_profit').iloc[0]
 top_margin = city_df.nlargest(1, 'avg_profit_margin').iloc[0]

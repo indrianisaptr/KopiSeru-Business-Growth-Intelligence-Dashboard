@@ -14,7 +14,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
     Render the global sidebar and return a filters dict.
     The filters dict is keyed to match apply_filters() expectations.
     """
-    # ── Sidebar CSS ────────────────────────────────────────────────────────
+    # Sidebar CSS 
     st.markdown(
         """
         <style>
@@ -262,12 +262,12 @@ def render_sidebar(df: pd.DataFrame) -> dict:
         unsafe_allow_html=True,
     )
 
-    # ── Compute branch / city counts for the info box ──────────────────────
+    # Compute branch / city counts for the info box
     n_branches = int(df["branch_id"].nunique()) if "branch_id" in df.columns else "—"
     n_cities   = int(df["branch_city"].nunique()) if "branch_city" in df.columns else "—"
 
     with st.sidebar:
-        # ── Filters header ─────────────────────────────────────────────────
+        # Filters header
         st.markdown(
             f"""
             <div style="padding: 2px 0 6px 0;">
@@ -279,8 +279,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
             unsafe_allow_html=True,
         )
 
-        # ── Reset All Filters — state setup (tombolnya dipindah ke bawah,
-        # di bawah section "Data Information") ─────────────────────────────
+        # Reset All Filters — state setup 
         _filter_bases = [
             "filter_year", "filter_month", "filter_city", "filter_branch_type",
             "filter_promo", "filter_weather", "filter_channel", "filter_day_type",
@@ -290,7 +289,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
 
         _rc = st.session_state["filter_reset_counter"]
 
-        # ── Date Filter (terbuka default) ───────────────────────────────
+        # Date Filter 
         with st.expander("Date Filter", expanded=True, icon=":material/calendar_month:"):
             years_avail = sorted(df["year"].unique().tolist())
             years_sel = st.multiselect(
@@ -311,7 +310,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
             label_to_int = {v: k for k, v in month_labels.items()}
             months_sel = [label_to_int[l] for l in months_sel_labels]
 
-        # ── Location Filter ──────────────────────────────────────────────
+        # Location Filter
         with st.expander("Location Filter", expanded=False, icon=":material/location_on:"):
             cities_avail = sorted(df["branch_city"].unique().tolist())
             cities_sel = st.multiselect(
@@ -321,7 +320,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
                 key=f"filter_city_{_rc}",
             )
 
-        # ── Branch Filter ────────────────────────────────────────────────
+        # Branch Filter 
         with st.expander("Branch Filter", expanded=False, icon=":material/storefront:"):
             btypes_avail = sorted(df["branch_type"].unique().tolist())
             btypes_sel = st.multiselect(
@@ -331,7 +330,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
                 key=f"filter_branch_type_{_rc}",
             )
 
-        # ── Promotion Filter ─────────────────────────────────────────────
+        # Promotion Filter
         with st.expander("Promotion Filter", expanded=False, icon=":material/campaign:"):
             promos_avail = sorted(df["promo_type"].unique().tolist())
             promos_sel = st.multiselect(
@@ -341,7 +340,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
                 key=f"filter_promo_{_rc}",
             )
 
-        # ── Sales Channel ────────────────────────────────────────────────
+        # Sales Channel
         with st.expander("Sales Channel", expanded=False, icon=":material/local_shipping:"):
             channels_avail = ["Takeaway", "Delivery", "Dine-in"]
             channels_sel = st.multiselect(
@@ -351,7 +350,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
                 key=f"filter_channel_{_rc}",
             )
 
-        # ── Operational Condition ────────────────────────────────────────
+        # Operational Condition
         with st.expander("Operational Condition", expanded=False, icon=":material/cloud:"):
             weathers_avail = sorted(df["weather"].unique().tolist())
             weathers_sel = st.multiselect(
@@ -369,7 +368,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
                 key=f"filter_day_type_{_rc}",
             )
 
-        # ── Reset All Filters (dipindah ke atas, sebelum garis & info data) ──
+        # Reset All Filters
         if st.button("Reset All Filters", use_container_width=True, key="btn_reset_filters"):
             old_rc = st.session_state["filter_reset_counter"]
             for base in _filter_bases:
@@ -379,7 +378,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
 
         st.markdown("<hr style='margin: 10px 0 6px 0;'>", unsafe_allow_html=True)
 
-        # ── Data Info (diperkecil, ringkas satu baris) ──────────────────────
+        # Data Info
         st.markdown(
             f"""
             <p style="font-size:10.5px; color:#D9C7B8; margin:0; line-height:1.6;">
