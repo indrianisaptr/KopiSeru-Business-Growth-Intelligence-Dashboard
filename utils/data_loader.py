@@ -25,6 +25,22 @@ CITY_ORDER = [
 
 BRANCH_TYPE_ORDER = ["Mall", "Office Area", "Stand Alone", "University"]
 
+WEATHER_MAP = {
+    "Cerah": "Sunny",
+    "Berawan": "Cloudy",
+    "Hujan Ringan": "Light Rain",
+    "Hujan Lebat": "Heavy Rain",
+}
+
+PROMO_MAP = {
+    "Diskon 20%": "20% Discount",
+}
+
+TRANSLATION_MAPS = {
+    "weather":    WEATHER_MAP,
+    "promo_type": PROMO_MAP,
+}
+
 # KopiSeru brand palette
 COLORS = {
     "primary":       "#5C3D1E",   # deep coffee brown
@@ -76,6 +92,12 @@ def _preprocess(df: pd.DataFrame) -> pd.DataFrame:
     df["date"]       = pd.to_datetime(df["date"])
     df["is_weekend"] = df["is_weekend"].astype(bool)
     df["promo_active"] = df["promo_active"].astype(bool)
+
+    # translate Indonesian categorical values to English (source CSV untouched).
+    # Safe against future schema changes: only touches a column if it exists.
+    for _col, _map in TRANSLATION_MAPS.items():
+        if _col in df.columns:
+            df[_col] = df[_col].replace(_map)
 
     # derived columns
     df["day_type"]      = df["is_weekend"].map({True: "Weekend", False: "Weekday"})

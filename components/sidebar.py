@@ -290,7 +290,7 @@ def render_sidebar(df: pd.DataFrame) -> dict:
         _rc = st.session_state["filter_reset_counter"]
 
         # Date Filter 
-        with st.expander("Date Filter", expanded=True, icon=":material/calendar_month:"):
+        with st.expander("Date Filter", expanded=False, icon=":material/calendar_month:"):
             years_avail = sorted(df["year"].unique().tolist())
             years_sel = st.multiselect(
                 "Year",

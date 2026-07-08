@@ -125,7 +125,7 @@ def promo_avg_revenue(df: pd.DataFrame) -> go.Figure:
         x=d["avg_revenue"], y=d["promo_type"],
         orientation="h",
         marker_color=COLORS["accent"],
-        text=[f"Rp {v/1e6:.1f} JT" for v in d["avg_revenue"]],
+        text=[f"Rp {v/1e6:.1f} M" for v in d["avg_revenue"]],
         textposition="outside",
         hovertemplate="<b>%{y}</b><br>Avg Revenue: Rp %{x:,.0f}<extra></extra>",
     ))
@@ -158,7 +158,7 @@ def txn_vs_revenue_scatter(df: pd.DataFrame) -> go.Figure:
     )
     fig.update_traces(marker=dict(size=8, opacity=0.65))
     fig.update_layout(
-        **_base_layout(height=250),
+        **_base_layout(height=190),
         coloraxis_colorbar=dict(
             title=dict(text="Avg Ticket (Rp)", font=dict(size=12)),
             thickness=10,
@@ -198,7 +198,7 @@ def weekday_bar(ww_df: pd.DataFrame, metric: str = "avg_revenue",
     texts = []
     for v in ww_df[metric]:
         if fmt == "currency":
-            texts.append(f"Rp {v/1e6:.1f} JT")
+            texts.append(f"Rp {v/1e6:.1f} M")
         elif fmt == "pct":
             texts.append(f"{v:.1f}%")
         else:
@@ -209,7 +209,7 @@ def weekday_bar(ww_df: pd.DataFrame, metric: str = "avg_revenue",
         y=ww_df[metric],
         marker_color=colors[:len(ww_df)],
         text=texts,
-        textposition="outside",
+        textposition="inside",
         hovertemplate="<b>%{x}</b><br>" + title + ": %{y:,.0f}<extra></extra>",
     ))
     fig.update_layout(
@@ -628,7 +628,7 @@ def satisfaction_trend(df: pd.DataFrame) -> go.Figure:
     layout = _base_layout(height=340)
     # legend outside the plot area (right side) so it never overlaps the lines
     layout["legend"] = dict(
-        title=dict(text="Tahun", font=dict(size=10)),
+        title=dict(text="Year", font=dict(size=10)),
         font=dict(size=12),
         orientation="v",
         yanchor="top", y=1.0, xanchor="left", x=1.01,

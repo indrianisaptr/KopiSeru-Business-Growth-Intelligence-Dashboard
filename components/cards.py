@@ -46,11 +46,11 @@ def fmt_currency(val: float, short: bool = True) -> str:
         return "—"
     if short:
         if abs(val) >= 1_000_000_000:
-            return f"Rp {val/1_000_000_000:.1f} M"
+            return f"Rp {val/1_000_000_000:.1f} B"
         if abs(val) >= 1_000_000:
-            return f"Rp {val/1_000_000:.1f} JT"
+            return f"Rp {val/1_000_000:.1f} M"
         if abs(val) >= 1_000:
-            return f"Rp {val/1_000:.0f} RB"
+            return f"Rp {val/1_000:.0f} K"
     return f"Rp {val:,.0f}"
 
 
