@@ -134,7 +134,7 @@ if True:
                     name=str(year),
                     line=dict(color=_color),
                     marker=dict(color=_color),
-                    hovertemplate='<b>%{x}</b><br>Profit: Rp %{y:,.0f}<extra></extra>'
+                    hovertemplate='<b>%{x}</b><br>Profit: Rp%{y:,.0f}<extra></extra>'
                 ))
             fig_profit.update_layout(
                 xaxis=dict(title=dict(text="Month", font=dict(size=14)), tickfont=dict(size=12)),
@@ -236,7 +236,7 @@ if True:
                 automargin=True,
                 tickmode="array",
                 tickvals=[4000000, 8000000, 12000000],
-                ticktext=["4M", "8M", "12M"],
+                ticktext=["4 M", "8 M", "12 M"],
             ),
             coloraxis_colorbar=dict(
                 title=dict(text="Avg Ticket (Rp)", font=dict(size=10)),

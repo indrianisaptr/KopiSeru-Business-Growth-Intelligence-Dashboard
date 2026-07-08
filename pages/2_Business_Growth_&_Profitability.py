@@ -1,5 +1,5 @@
 """
-pages/2_📈_Business_Growth_&_Profitability.py
+pages/2_Business_Growth_&_Profitability.py
 Business Growth & Profitability Analysis
 """
 
@@ -252,7 +252,7 @@ with row2_c3:
                 x=wd_df['day_type'],
                 y=wd_df['avg_profit'],
                 marker_color=['#5C3D1E', '#D4A853'],
-                text=wd_df['avg_profit'].apply(lambda x: f'Rp{x/1e6:.1f}M'),
+                text=wd_df['avg_profit'].apply(fmt_currency),
                 textposition='auto',
                 hovertemplate='<b>%{x}</b><br>Profit: Rp%{y:,.0f}<extra></extra>'
             ))

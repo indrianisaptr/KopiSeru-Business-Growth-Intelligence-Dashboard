@@ -72,12 +72,12 @@ def fmt_currency(val: float, short: bool = True, decimals: int = 1) -> str:
         return "—"
     if short:
         if abs(val) >= 1_000_000_000:
-            return f"Rp{val/1_000_000_000:.{decimals}f} B"
+            return f"Rp {val/1_000_000_000:.{decimals}f} B"
         if abs(val) >= 1_000_000:
-            return f"Rp{val/1_000_000:.{decimals}f} M"
+            return f"Rp {val/1_000_000:.{decimals}f} M"
         if abs(val) >= 1_000:
-            return f"Rp{val/1_000:.{decimals}f} K"
-    return f"Rp{val:,.0f}"
+            return f"Rp {val/1_000:.{decimals}f} K"
+    return f"Rp {val:,.0f}"
 
 
 def fmt_number(val: float, suffix: str = "") -> str:

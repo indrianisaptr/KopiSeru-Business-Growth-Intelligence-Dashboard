@@ -59,7 +59,7 @@ def revenue_trend(monthly_df: pd.DataFrame) -> go.Figure:
             mode="lines+markers",
             line=dict(color=colors[i % len(colors)], width=2.5),
             marker=dict(size=6),
-            hovertemplate="<b>%{x} %{fullData.name}</b><br>Revenue: Rp %{y:,.0f}<extra></extra>",
+            hovertemplate="<b>%{x} %{fullData.name}</b><br>Revenue: Rp%{y:,.0f}<extra></extra>",
         ))
     fig.update_layout(
         title="Monthly Revenue Trend (All Branches)",
@@ -104,7 +104,7 @@ def promo_boxplot(df: pd.DataFrame) -> go.Figure:
             y=d, name=label,
             marker_color=color,
             boxmean="sd",
-            hovertemplate="<b>" + label + "</b><br>Revenue: Rp %{y:,.0f}<extra></extra>",
+            hovertemplate="<b>" + label + "</b><br>Revenue: Rp%{y:,.0f}<extra></extra>",
         ))
     fig.update_layout(
         title="Revenue Distribution: Promo vs Non-Promo",
@@ -126,9 +126,9 @@ def promo_avg_revenue(df: pd.DataFrame) -> go.Figure:
         x=d["avg_revenue"], y=d["promo_type"],
         orientation="h",
         marker_color=COLORS["accent"],
-        text=[f"Rp {v/1e6:.1f} M" for v in d["avg_revenue"]],
+        text=[fmt_currency(v) for v in d["avg_revenue"]],
         textposition="outside",
-        hovertemplate="<b>%{y}</b><br>Avg Revenue: Rp %{x:,.0f}<extra></extra>",
+        hovertemplate="<b>%{y}</b><br>Avg Revenue: Rp%{x:,.0f}<extra></extra>",
     ))
     fig.update_layout(
         title="Average Revenue per Promo Type",
@@ -199,7 +199,7 @@ def weekday_bar(ww_df: pd.DataFrame, metric: str = "avg_revenue",
     texts = []
     for v in ww_df[metric]:
         if fmt == "currency":
-            texts.append(f"Rp {v/1e6:.1f} M")
+            texts.append(fmt_currency(v))
         elif fmt == "pct":
             texts.append(f"{v:.1f}%")
         else:
@@ -231,7 +231,7 @@ def city_profit_bar(city_df: pd.DataFrame) -> go.Figure:
         x=d["total_profit"], y=d["branch_city"],
         orientation="h",
         marker_color=COLORS["primary"],
-        text=[f"Rp {v/1e6:.2f} M" for v in d["total_profit"]],
+        text=[fmt_currency(v, decimals=2) for v in d["total_profit"]],
         textposition="outside",
         customdata=d["num_branches"],
         hovertemplate=(
@@ -336,7 +336,7 @@ def city_bubble(city_df: pd.DataFrame, expansion_df: pd.DataFrame = None) -> go.
             "<b>%{customdata[0]}</b><br>"
             "Branches: %{customdata[1]}<br>"
             "Avg Margin: %{customdata[2]:.1f}%<br>"
-            "Revenue/branch: Rp %{customdata[3]:,.0f}<br>"
+            "Revenue/branch: Rp%{customdata[3]:,.0f}<br>"
             "Expansion Score: %{customdata[4]:.3f}<extra></extra>"
         ),
         showlegend=False,
