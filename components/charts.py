@@ -216,7 +216,7 @@ def weekday_bar(ww_df: pd.DataFrame, metric: str = "avg_revenue",
     fig.update_layout(
         title=title,
         yaxis=_axis_style(),
-        hovermode="x",
+        hovermode="closest",
         **_base_layout(height=300),
     )
     return fig
@@ -678,6 +678,7 @@ def satisfaction_weather_box(df: pd.DataFrame) -> go.Figure:
             y=d, name=weather,
             marker_color=colors[i % len(colors)],
             boxmean="sd",
+            hoveron="boxes",
             hovertemplate=hover_text + "<extra></extra>",
         ))
     fig.update_layout(

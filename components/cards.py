@@ -16,6 +16,7 @@ import base64
 from pathlib import Path
 
 _LOGO_CACHE = None
+_BRAND_LOGO_CACHE = None
 
 def _get_logo_b64() -> str:
     """Baca logo sekali, cache di memori supaya tidak baca file berulang."""
@@ -25,6 +26,21 @@ def _get_logo_b64() -> str:
         data = logo_path.read_bytes()
         _LOGO_CACHE = f"data:image/png;base64,{base64.b64encode(data).decode()}"
     return _LOGO_CACHE
+
+
+def _get_brand_logo_b64() -> str:
+    """Baca logo KopiSeru (assets/LogoKopiSeru.png) sekali, cache di memori.
+
+    Dipakai untuk menggantikan teks kuning "KOPISERU" di section_header()
+    dengan logo resmi, tanpa mengubah logo bulat (Icon_topi.png) yang
+    sudah tampil di sisi kiri header.
+    """
+    global _BRAND_LOGO_CACHE
+    if _BRAND_LOGO_CACHE is None:
+        logo_path = Path(__file__).resolve().parents[1] / "assets" / "LogoKopiSeru.png"
+        data = logo_path.read_bytes()
+        _BRAND_LOGO_CACHE = f"data:image/png;base64,{base64.b64encode(data).decode()}"
+    return _BRAND_LOGO_CACHE
 
 
 def _render_html(html: str) -> None:
@@ -119,8 +135,9 @@ def metric_card(
 
 
 def section_header(title: str, subtitle: str = "") -> None:
-    """Render hero header box: logo | KopiSeru | nama halaman | deskripsi."""
+    """Render hero header box: logo | logo KopiSeru | nama halaman | deskripsi."""
     logo_b64 = _get_logo_b64()
+    brand_logo_b64 = _get_brand_logo_b64()
     sub_html = (
         f'<div style="font-size:15px; color:#E8D5BC; margin-top:4px;">{subtitle}</div>'
         if subtitle else ""
@@ -142,9 +159,9 @@ def section_header(title: str, subtitle: str = "") -> None:
         ">
             <img src="{logo_b64}" style="height:56px; width:56px; object-fit:contain; flex-shrink:0;">
             <div>
-                <div style="font-size:15px; font-weight:700; letter-spacing:0.08em;
-                            text-transform:uppercase; color:#FFEDAC; margin-bottom:2px;">
-                    KopiSeru
+                <div style="display:flex; align-items:center; margin-bottom:2px;">
+                    <img src="{brand_logo_b64}" alt="KopiSeru"
+                         style="height:19px; width:auto; object-fit:contain; display:block;">
                 </div>
                 <div style="font-size:24px; font-weight:800; color:#F1EEEA; line-height:1.15;">
                     {title}
